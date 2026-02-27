@@ -82,11 +82,15 @@
             margin: 15px 0;
             border-radius: 8px;
             overflow: hidden;
+            background-color: #000;
         }
         .media-preview img, .media-preview video {
             max-width: 100%;
             max-height: 400px;
             display: block;
+            margin: 0 auto;
+            width: 100%;
+            object-fit: contain;
         }
         .media-badge {
             display: inline-block;
@@ -238,9 +242,10 @@
                 const videoId = 'video-' + wallpaper.wallpaper_id;
                 return `
                     <div class="media-preview">
-                        <video id="${videoId}" controls poster="${thumbnail}" style="max-width: 100%; max-height: 400px;" onplay="handleVideoPlay('${videoId}', '${thumbnail}')" onpause="handleVideoPause('${videoId}', '${thumbnail}')">
+                        <video id="${videoId}" controls playsinline preload="metadata" poster="${thumbnail}" style="max-width: 100%; max-height: 400px; display: block;" onplay="handleVideoPlay('${videoId}', '${thumbnail}')" onpause="handleVideoPause('${videoId}', '${thumbnail}')">
+                            <source src="${wallpaper.file_url}" type="video/mp4; codecs=avc1.42E01E,mp4a.40.2">
                             <source src="${wallpaper.file_url}" type="video/mp4">
-                            您的浏览器不支持视频播放
+                            您的浏览器不支持视频播放，请尝试使用其他浏览器。
                         </video>
                     </div>
                 `;
