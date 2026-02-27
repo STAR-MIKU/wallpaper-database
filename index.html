@@ -6,7 +6,7 @@
     <title>壁纸数据库查询</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 20px;
             background-color: #f5f5f5;
         }
@@ -14,34 +14,42 @@
             max-width: 1200px;
             margin: 0 auto;
             background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         h1 {
             color: #333;
             text-align: center;
+            margin-bottom: 30px;
         }
         .search-form {
             margin: 20px 0;
             text-align: center;
         }
         input[type="text"] {
-            padding: 10px;
-            width: 300px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 12px 16px;
+            width: 400px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
             font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4CAF50;
         }
         button {
-            padding: 10px 20px;
+            padding: 12px 28px;
             background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
             margin-left: 10px;
+            font-weight: 500;
+            transition: background-color 0.3s;
         }
         button:hover {
             background-color: #45a049;
@@ -50,45 +58,93 @@
             margin-top: 30px;
         }
         .result-item {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #fafafa;
+            transition: box-shadow 0.3s;
+        }
+        .result-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
         .result-item h3 {
             margin-top: 0;
             color: #333;
+            font-size: 20px;
         }
         .result-item p {
-            margin: 5px 0;
+            margin: 8px 0;
             color: #666;
+            font-size: 14px;
+        }
+        .media-preview {
+            margin: 15px 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .media-preview img, .media-preview video {
+            max-width: 100%;
+            max-height: 400px;
+            display: block;
+        }
+        .media-badge {
+            display: inline-block;
+            background-color: #2196F3;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 10px;
         }
         .tags {
-            margin-top: 10px;
+            margin-top: 15px;
         }
         .tag {
             display: inline-block;
-            background-color: #e0e0e0;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            margin-right: 5px;
-            margin-bottom: 5px;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 5px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+            margin-right: 8px;
+            margin-bottom: 8px;
         }
         .author-info {
-            margin-top: 10px;
-            padding-top: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
             border-top: 1px solid #eee;
             font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .author-details {
+            flex: 1;
+        }
+        .author-name {
+            font-weight: 600;
+            color: #333;
+            text-decoration: none;
+        }
+        .author-name:hover {
+            text-decoration: underline;
         }
         .json-output {
             margin-top: 30px;
-            padding: 15px;
-            background-color: #f0f0f0;
+            padding: 20px;
+            background-color: #f5f5f5;
             border-radius: 8px;
-            font-family: monospace;
+            font-family: 'Courier New', monospace;
             white-space: pre-wrap;
+            font-size: 13px;
         }
     </style>
 </head>
@@ -104,42 +160,27 @@
     </div>
 
     <script>
-        // 存储壁纸数据
         let wallpapers = [];
 
-        // 加载壁纸数据
         async function loadWallpapers() {
             try {
                 const response = await fetch('wallpaper_info.json');
                 const data = await response.json();
                 wallpapers = data.data;
                 console.log('壁纸数据加载成功:', wallpapers.length, '张壁纸');
-                // 检查URL参数
                 checkUrlParams();
             } catch (error) {
                 console.error('加载壁纸数据失败:', error);
             }
         }
 
-        // 检查URL参数
         function checkUrlParams() {
             const urlParams = new URLSearchParams(window.location.search);
             const query = urlParams.get('q');
             if (query) {
-                // 如果是URL参数查询，直接返回JSON数据
-                const filteredWallpapers = wallpapers.filter(wallpaper => {
-                    if (wallpaper.wallpaper_title.includes(query)) {
-                        return true;
-                    }
-                    if (wallpaper.tags.some(tag => tag.includes(query))) {
-                        return true;
-                    }
-                    return false;
-                });
-
+                const filteredWallpapers = filterWallpapers(query);
                 const sortedWallpapers = sortWallpapersById(filteredWallpapers);
                 
-                // 设置响应头为JSON
                 document.body.innerHTML = '';
                 document.head.innerHTML = '<title>JSON Response</title>';
                 
@@ -155,7 +196,21 @@
             }
         }
 
-        // 搜索壁纸
+        function filterWallpapers(query) {
+            return wallpapers.filter(wallpaper => {
+                if (wallpaper.wallpaper_title.includes(query)) {
+                    return true;
+                }
+                if (wallpaper.tags.some(tag => tag.includes(query))) {
+                    return true;
+                }
+                if (wallpaper.author && wallpaper.author.nickname && wallpaper.author.nickname.includes(query)) {
+                    return true;
+                }
+                return false;
+            });
+        }
+
         function searchWallpapers() {
             const query = document.getElementById('searchInput').value.trim();
             if (!query) {
@@ -163,70 +218,94 @@
                 return;
             }
 
-            // 过滤壁纸
-            const filteredWallpapers = wallpapers.filter(wallpaper => {
-                // 检查标题
-                if (wallpaper.wallpaper_title.includes(query)) {
-                    return true;
-                }
-                // 检查标签
-                if (wallpaper.tags.some(tag => tag.includes(query))) {
-                    return true;
-                }
-                return false;
-            });
-
-            // 按壁纸ID排序
+            const filteredWallpapers = filterWallpapers(query);
             const sortedWallpapers = sortWallpapersById(filteredWallpapers);
-
-            // 显示结果
             displayResults(sortedWallpapers, query);
-
-            // 显示JSON输出
             displayJsonOutput(sortedWallpapers);
         }
 
-        // 按壁纸ID排序
         function sortWallpapersById(wallpapers) {
             return wallpapers.sort((a, b) => {
-                // 提取ID部分并比较
                 const idA = a.wallpaper_id.replace('wp-', '');
                 const idB = b.wallpaper_id.replace('wp-', '');
                 return idA.localeCompare(idB);
             });
         }
 
-        // 显示搜索结果
+        function getMediaPreview(wallpaper) {
+            if (wallpaper.media_type === 'video') {
+                const thumbnail = wallpaper.thumbnail_url || wallpaper.file_url;
+                return `
+                    <div class="media-preview">
+                        <video controls poster="${thumbnail}" style="max-width: 100%; max-height: 400px;">
+                            <source src="${wallpaper.file_url}" type="video/mp4">
+                            您的浏览器不支持视频播放
+                        </video>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="media-preview">
+                        <img src="${wallpaper.file_url}" alt="${wallpaper.wallpaper_title}">
+                    </div>
+                `;
+            }
+        }
+
+        function getAuthorInfo(wallpaper) {
+            if (!wallpaper.author) {
+                return '';
+            }
+            
+            let authorHtml = '<div class="author-info">';
+            
+            if (wallpaper.author.avatar) {
+                authorHtml += `<img src="${wallpaper.author.avatar}" alt="${wallpaper.author.nickname}" class="author-avatar">`;
+            }
+            
+            authorHtml += '<div class="author-details">';
+            
+            if (wallpaper.author.social_homepage) {
+                authorHtml += `<a href="${wallpaper.author.social_homepage}" target="_blank" class="author-name">${wallpaper.author.nickname || '未知作者'}</a>`;
+            } else {
+                authorHtml += `<span class="author-name">${wallpaper.author.nickname || '未知作者'}</span>`;
+            }
+            
+            authorHtml += '</div></div>';
+            return authorHtml;
+        }
+
         function displayResults(results, query) {
             const resultsContainer = document.getElementById('results');
             if (results.length === 0) {
-                resultsContainer.innerHTML = `<p>未找到与"${query}"相关的壁纸</p>`;
+                resultsContainer.innerHTML = `<p style="text-align: center; color: #666; font-size: 16px; padding: 40px;">未找到与"${query}"相关的壁纸</p>`;
                 return;
             }
 
-            let html = `<h2>搜索结果 (${results.length} 张壁纸)</h2>`;
+            let html = `<h2 style="margin-bottom: 25px; color: #333;">搜索结果 (${results.length} 张壁纸)</h2>`;
             results.forEach(wallpaper => {
+                const mediaBadge = wallpaper.media_type === 'video' 
+                    ? '<span class="media-badge">视频</span>' 
+                    : '<span class="media-badge" style="background-color: #4CAF50;">图片</span>';
+                
                 html += `
                     <div class="result-item">
                         <h3>${wallpaper.wallpaper_title}</h3>
-                        <p>ID: ${wallpaper.wallpaper_id}</p>
-                        <p>尺寸: ${wallpaper.width} × ${wallpaper.height}</p>
-                        <p>格式: ${wallpaper.format}</p>
-                        <img src="image/${wallpaper.wallpaper_id}.png" alt="${wallpaper.wallpaper_title}" style="max-width: 100%; max-height: 300px; margin-top: 10px;">
+                        ${mediaBadge}
+                        <p><strong>ID:</strong> ${wallpaper.wallpaper_id}</p>
+                        <p><strong>设备:</strong> ${wallpaper.device || '未知'}</p>
+                        <p><strong>创建时间:</strong> ${wallpaper.created_at}</p>
+                        ${getMediaPreview(wallpaper)}
                         <div class="tags">
                             ${wallpaper.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
                         </div>
-                        <div class="author-info">
-                            <p>作者: ${wallpaper.author ? wallpaper.author.nickname : '未知'}</p>
-                            <p>创建时间: ${wallpaper.created_at}</p>
-                        </div>
+                        ${getAuthorInfo(wallpaper)}
                     </div>
                 `;
             });
             resultsContainer.innerHTML = html;
         }
 
-        // 显示JSON输出
         function displayJsonOutput(results) {
             const jsonOutput = document.getElementById('jsonOutput');
             const outputData = {
@@ -238,7 +317,6 @@
             jsonOutput.textContent = JSON.stringify(outputData, null, 2);
         }
 
-        // 页面加载时加载数据
         window.onload = loadWallpapers;
     </script>
 </body>
