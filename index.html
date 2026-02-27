@@ -137,6 +137,33 @@
         .author-name:hover {
             text-decoration: underline;
         }
+        .recommend-tags {
+            margin: 25px 0;
+            text-align: center;
+        }
+        .recommend-tags-label {
+            font-size: 14px;
+            color: #666;
+            margin-right: 10px;
+        }
+        .recommend-tag {
+            display: inline-block;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid #bbdefb;
+        }
+        .recommend-tag:hover {
+            background-color: #1976d2;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
+        }
         .json-output {
             margin-top: 30px;
             padding: 20px;
@@ -155,23 +182,47 @@
             <input type="text" id="searchInput" placeholder="输入壁纸标题、标签或作者名称" value="">
             <button onclick="searchWallpapers()">搜索</button>
         </div>
+        <div class="recommend-tags" id="recommendTags"></div>
         <div class="results" id="results"></div>
         <div class="json-output" id="jsonOutput"></div>
     </div>
 
     <script>
         let wallpapers = [];
+        let recommendTags = [];
 
         async function loadWallpapers() {
             try {
                 const response = await fetch('wallpaper_info.json');
                 const data = await response.json();
                 wallpapers = data.data;
+                recommendTags = data.recommend || [];
                 console.log('壁纸数据加载成功:', wallpapers.length, '张壁纸');
+                console.log('推荐标签:', recommendTags);
+                displayRecommendTags();
                 checkUrlParams();
             } catch (error) {
                 console.error('加载壁纸数据失败:', error);
             }
+        }
+
+        function displayRecommendTags() {
+            const container = document.getElementById('recommendTags');
+            if (!recommendTags || recommendTags.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            let html = '<span class="recommend-tags-label">热门推荐：</span>';
+            recommendTags.forEach(tag => {
+                html += `<span class="recommend-tag" onclick="searchByTag('${tag}')">${tag}</span>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function searchByTag(tag) {
+            document.getElementById('searchInput').value = tag;
+            searchWallpapers();
         }
 
         function checkUrlParams() {

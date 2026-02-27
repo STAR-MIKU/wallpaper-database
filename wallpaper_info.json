@@ -2,6 +2,7 @@
   "code": 200,
   "message": "获取成功",
   "request_id": "req_20260227165932001",
+  "recommend": ["编辑推荐", "二次元", "少女"],
   "data": [
     {
       "wallpaper_id": "wp-c4ca4238a0b923820dcc509a6f75849b",
