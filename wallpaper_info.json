@@ -9,9 +9,7 @@
       "media_type": "image",
       "file_url": "image/wp-c4ca4238a0b923820dcc509a6f75849b.png",
       "device": "Desktop",
-      "tags": ["崩坏3", "爱莉希雅", "粉色妖精小姐", "少女", "粉色", "梦幻", "插画", "氛围感", "花束", "编辑推荐"],
-      "description": "《崩坏3》角色爱莉希雅的同人插画，画面中她手持花束，在黑枝与花瓣的环绕中，呈现出温柔又梦幻的氛围。",
-      "source": "网络",
+      "tags": ["崩坏3", "爱莉希雅", "粉色妖精小姐", "少女", "编辑推荐"],
       "created_at": "2026-02-27 15:30:00"
     },
     {
@@ -20,22 +18,64 @@
       "media_type": "image",
       "file_url": "image/wp-c81e728d9d4c2f636f067f89cc14862c.png",
       "device": "Desktop",
-      "tags": ["天选", "天选姬", "猫耳", "少女", "二次元", "编辑推荐"],
-      "description": "华硕天选系列游戏本的官方二次元形象天选姬，可爱的猫耳少女形象，代表华硕天选系列产品的年轻化与游戏属性。",
-      "source": "网络",
+      "tags": ["天选姬", "少女", "二次元", "编辑推荐"],
       "created_at": "2026-02-27 14:23:00"
     },
     {
       "wallpaper_id": "wp-eccbc87e4b5ce2fe28308fd9f2a7baf3",
-      "wallpaper_title": "糖果风初音未来动态视频",
+      "wallpaper_title": "糖果风初音未来",
       "media_type": "video",
       "file_url": "video/wp-eccbc87e4b5ce2fe28308fd9f2a7baf3.mp4",
       "thumbnail_url": "image/wp-eccbc87e4b5ce2fe28308fd9f2a7baf3.png",
       "device": "Desktop",
-      "tags": ["初音未来", "VOCALOID", "糖果风", "少女", "双马尾", "青绿色", "动态视频", "可爱", "梦幻", "编辑推荐"],
-      "description": "色彩明快的糖果风初音未来动态视频，角色手持粉色长物，背景充满爱心、星星、煎蛋等可爱元素，整体风格活泼梦幻，适合作为动态壁纸。",
-      "source": "网络",
+      "tags": ["初音未来", "miku", "二次元", "少女", "编辑推荐"],
       "created_at": "2026-02-27 16:30:00"
+    },
+    {
+      "wallpaper_id": "wp-a87ff679a2f3e71d9181a67b7542122c",
+      "wallpaper_title": "是我喜欢的生日趴体，直接加入！",
+      "media_type": "image",
+      "file_url": "image/wp-a87ff679a2f3e71d9181a67b7542122c.png",
+      "device": "Desktop",
+      "tags": ["喵斯快跑", "玛莉嘉", "二次元", "少女"],
+      "created_at": "2026-02-27 17:00:00",
+      "author": {
+      "user_id": "musedash",
+      "nickname": "MuseDash_喵斯快跑",
+      "avatar": "image/avatar/musedash_avatar.jpg",
+      "social_homepage": "https://space.bilibili.com/269396974"
+      }
+    },
+    {
+      "wallpaper_id": "wp-e4da3b7fbbce2345d7772b0674a318d5",
+      "wallpaper_title": "我在想咱们做寿司的那些个鱼，它们个个有情有义 😭",
+      "media_type": "image",
+      "file_url": "image/wp-e4da3b7fbbce2345d7772b0674a318d5.png",
+      "device": "Desktop",
+      "tags": ["喵斯快跑", "布若", "二次元", "少女", "潜水员戴夫"],
+      "created_at": "2026-02-27 17:00:00",
+      "author": {
+      "user_id": "musedash",
+      "nickname": "MuseDash_喵斯快跑",
+      "avatar": "image/avatar/musedash_avatar.jpg",
+      "social_homepage": "https://space.bilibili.com/269396974"
+      }
+    },
+    {
+      "wallpaper_id": "wp-1679091c5a880faf6fb5e6087eb1b2dc",
+      "wallpaper_title": "布若和班乔师傅等你送鱼来呢，你不来我们吃什么ヽ(`Д´)ﾉ",
+      "media_type": "image",
+      "file_url": "image/wp-1679091c5a880faf6fb5e6087eb1b2dc.png",
+      "device": "Desktop",
+      "tags": ["喵斯快跑", "潜水员戴夫", "二次元", "少女"],
+      "created_at": "2026-02-27 17:00:00",
+      "author": {
+      "user_id": "musedash",
+      "nickname": "MuseDash_喵斯快跑",
+      "avatar": "image/avatar/musedash_avatar.jpg",
+      "social_homepage": "https://space.bilibili.com/269396974"
+      }
     }
+
   ]
 }
