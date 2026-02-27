@@ -134,9 +134,6 @@
                     if (wallpaper.tags.some(tag => tag.includes(query))) {
                         return true;
                     }
-                    if (wallpaper.author && wallpaper.author.nickname.includes(query)) {
-                        return true;
-                    }
                     return false;
                 });
 
@@ -174,10 +171,6 @@
                 }
                 // 检查标签
                 if (wallpaper.tags.some(tag => tag.includes(query))) {
-                    return true;
-                }
-                // 检查作者
-                if (wallpaper.author.nickname.includes(query)) {
                     return true;
                 }
                 return false;
