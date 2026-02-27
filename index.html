@@ -235,9 +235,10 @@
         function getMediaPreview(wallpaper) {
             if (wallpaper.media_type === 'video') {
                 const thumbnail = wallpaper.thumbnail_url || wallpaper.file_url;
+                const videoId = 'video-' + wallpaper.wallpaper_id;
                 return `
                     <div class="media-preview">
-                        <video controls poster="${thumbnail}" style="max-width: 100%; max-height: 400px;">
+                        <video id="${videoId}" controls poster="${thumbnail}" style="max-width: 100%; max-height: 400px;" onplay="handleVideoPlay('${videoId}', '${thumbnail}')" onpause="handleVideoPause('${videoId}', '${thumbnail}')">
                             <source src="${wallpaper.file_url}" type="video/mp4">
                             您的浏览器不支持视频播放
                         </video>
@@ -249,6 +250,20 @@
                         <img src="${wallpaper.file_url}" alt="${wallpaper.wallpaper_title}">
                     </div>
                 `;
+            }
+        }
+
+        function handleVideoPlay(videoId, thumbnail) {
+            const video = document.getElementById(videoId);
+            if (video) {
+                video.removeAttribute('poster');
+            }
+        }
+
+        function handleVideoPause(videoId, thumbnail) {
+            const video = document.getElementById(videoId);
+            if (video) {
+                video.setAttribute('poster', thumbnail);
             }
         }
 
