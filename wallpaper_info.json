@@ -1,0 +1,41 @@
+{
+  "code": 200,
+  "message": "获取成功",
+  "request_id": "req_20260227165932001",
+  "data": [
+    {
+      "wallpaper_id": "wp-c4ca4238a0b923820dcc509a6f75849b",
+      "wallpaper_title": "粉色妖精小姐爱莉希雅",
+      "media_type": "image",
+      "file_url": "image/wp-c4ca4238a0b923820dcc509a6f75849b.png",
+      "thumbnail_url": "image/wp-c4ca4238a0b923820dcc509a6f75849b.png",
+      "width": 2502,
+      "height": 1124,
+      "duration": 0,
+      "size": 2621440,
+      "format": "png",
+      "aspect_ratio": "20:9",
+      "tags": ["崩坏3", "爱莉希雅", "粉色妖精小姐", "少女", "粉色", "梦幻", "插画", "氛围感", "花束"],
+      "description": "《崩坏3》角色爱莉希雅的同人插画，画面中她手持花束，在黑枝与花瓣的环绕中，呈现出温柔又梦幻的氛围。",
+      "source": "网络",
+      "created_at": "2026-02-27 15:30:00"
+    },
+    {
+      "wallpaper_id": "wp-c81e728d9d4c2f636f067f89cc14862c",
+      "wallpaper_title": "天选姬",
+      "media_type": "image",
+      "file_url": "image/wp-c81e728d9d4c2f636f067f89cc14862c.png",
+      "thumbnail_url": "image/wp-c81e728d9d4c2f636f067f89cc14862c.png",
+      "width": 2558,
+      "height": 1436,
+      "duration": 0,
+      "size": 3061888,
+      "format": "png",
+      "aspect_ratio": "16:9",
+      "tags": ["天选", "天选姬", "猫耳", "少女", "二次元"],
+      "description": "华硕天选系列游戏本的官方二次元形象天选姬，可爱的猫耳少女形象，代表华硕天选系列产品的年轻化与游戏属性。",
+      "source": "网络",
+      "created_at": "2026-02-27 14:23:00"
+    }
+  ]
+}
