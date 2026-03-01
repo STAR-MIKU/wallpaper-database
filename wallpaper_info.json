@@ -289,7 +289,6 @@
     },
     {
       "wallpaper_id": "wp-3c59dc048e8850243be8079a5c74d079",
-      "wallpaper_title": "大师这一块",
       "media_type": "image",
       "file_url": "image/wp-3c59dc048e8850243be8079a5c74d079.png",
       "device": "mobile",
@@ -298,7 +297,6 @@
     },
     {
       "wallpaper_id": "wp-b6d767d2f8ed5d21a44b0e5886680cb9",
-      "wallpaper_title": "大师这一块",
       "media_type": "image",
       "file_url": "image/wp-b6d767d2f8ed5d21a44b0e5886680cb9.jpeg",
       "device": "mobile",
@@ -307,7 +305,6 @@
     },
     {
       "wallpaper_id": "wp-37693cfc748049e45d87b8c7d8b9aacd",
-      "wallpaper_title": "大师这一块",
       "media_type": "image",
       "file_url": "image/wp-37693cfc748049e45d87b8c7d8b9aacd.jpeg",
       "device": "mobile",
@@ -316,11 +313,10 @@
     },
     {
       "wallpaper_id": "wp-1ff1de774005f8da13f42943881c655f",
-      "wallpaper_title": "大师这一块",
       "media_type": "image",
       "file_url": "image/wp-1ff1de774005f8da13f42943881c655f.jpeg",
       "device": "mobile",
-      "tags": ["二次元", "少女", "千早爱音"],
+      "tags": ["二次元", "少女", "千早爱音", "长崎素世"],
       "created_at": "2026-02-27 17:00:00"
     }
   ]
