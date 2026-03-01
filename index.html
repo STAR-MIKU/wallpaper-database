@@ -249,10 +249,10 @@
 
         function filterWallpapers(query) {
             return wallpapers.filter(wallpaper => {
-                if (wallpaper.wallpaper_title.includes(query)) {
+                if (wallpaper.wallpaper_title && wallpaper.wallpaper_title.includes(query)) {
                     return true;
                 }
-                if (wallpaper.tags.some(tag => tag.includes(query))) {
+                if (wallpaper.tags && Array.isArray(wallpaper.tags) && wallpaper.tags.some(tag => tag.includes(query))) {
                     return true;
                 }
                 if (wallpaper.author && wallpaper.author.nickname && wallpaper.author.nickname.includes(query)) {
