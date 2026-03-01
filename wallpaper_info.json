@@ -25,9 +25,8 @@
     {
       "wallpaper_id": "wp-eccbc87e4b5ce2fe28308fd9f2a7baf3",
       "wallpaper_title": "糖果风初音未来",
-      "media_type": "video",
-      "file_url": "video/wp-eccbc87e4b5ce2fe28308fd9f2a7baf3.mp4",
-      "thumbnail_url": "image/wp-eccbc87e4b5ce2fe28308fd9f2a7baf3.png",
+      "media_type": "image",
+      "file_url": "image/wp-eccbc87e4b5ce2fe28308fd9f2a7baf3.png",
       "device": "Desktop",
       "tags": ["初音未来", "miku", "二次元", "少女"],
       "created_at": "2026-02-27 16:30:00"
@@ -601,9 +600,8 @@
     {
       "wallpaper_id": "wp-66f041e16a60928b05a7e228a89c3799",
       "wallpaper_title": "琪亚娜月光公主",
-      "media_type": "video",
-      "file_url": "video/wp-66f041e16a60928b05a7e228a89c3799.mp4",
-      "thumbnail_url": "image/wp-66f041e16a60928b05a7e228a89c3799.png",
+      "media_type": "image",
+      "file_url": "image/wp-66f041e16a60928b05a7e228a89c3799.png",
       "device": "Desktop",
       "tags": ["二次元", "少女", "琪亚娜", "崩坏3"],
       "created_at": "2026-02-27 17:00:00",
@@ -617,9 +615,8 @@
     {
       "wallpaper_id": "wp-093f65e080a295f8076b1c5722a46aa2",
       "wallpaper_title": "高架上的少女",
-      "media_type": "video",
-      "file_url": "video/wp-093f65e080a295f8076b1c5722a46aa2.mp4",
-      "thumbnail_url": "image/wp-093f65e080a295f8076b1c5722a46aa2.png",
+      "media_type": "image",
+      "file_url": "image/wp-093f65e080a295f8076b1c5722a46aa2.png",
       "device": "Desktop",
       "tags": ["二次元", "少女", "蔚蓝档案", "bluearchive"],
       "created_at": "2026-02-27 17:00:00",
@@ -629,6 +626,86 @@
       "avatar": "image/avatar/76561199251539188.jpg",
       "social_homepage": "https://steamcommunity.com/profiles/76561199251539188/"
       }
+    },
+    {
+      "wallpaper_id": "wp-072b030ba126b2f4b2374f342be9ed44",
+      "media_type": "image",
+      "file_url": "image/wp-072b030ba126b2f4b2374f342be9ed44.jpeg",
+      "device": "Desktop",
+      "tags": ["二次元", "卡拉彼丘", "白墨", "米雪儿", "艾卡"],
+      "created_at": "2026-02-27 17:00:00"
+    },
+    {
+      "wallpaper_id": "wp-7f39f8317fbdb1988ef4c628eba02591",
+      "media_type": "image",
+      "file_url": "image/wp-7f39f8317fbdb1988ef4c628eba02591.jpeg",
+      "device": "Desktop",
+      "tags": ["二次元", "卡拉彼丘", "米雪儿", "艾卡"],
+      "created_at": "2026-02-27 17:00:00"
+    },
+    {
+      "wallpaper_id": "wp-44f683a84163b3523afe57c2e008bc8c",
+      "media_type": "image",
+      "file_url": "image/wp-44f683a84163b3523afe57c2e008bc8c.jpeg",
+      "device": "Desktop",
+      "tags": ["二次元", "卡拉彼丘", "白墨", "明", "香奈美", "拉薇"],
+      "created_at": "2026-02-27 17:00:00"
+    },
+    {
+      "wallpaper_id": "wp-03afdbd66e7929b125f8597834fa83a4",
+      "media_type": "image",
+      "file_url": "image/wp-03afdbd66e7929b125f8597834fa83a4.jpeg",
+      "device": "Desktop",
+      "tags": ["二次元", "卡拉彼丘", "白墨"],
+      "created_at": "2026-02-27 17:00:00"
+    },
+    {
+      "wallpaper_id": "wp-ea5d2f1c4608232e07d3aa3d998e5135",
+      "media_type": "image",
+      "file_url": "image/wp-ea5d2f1c4608232e07d3aa3d998e5135.jpeg",
+      "device": "Desktop",
+      "tags": ["二次元", "卡拉彼丘", "白墨", "明", "香奈美", "星绘", "绯莎"],
+      "created_at": "2026-02-27 17:00:00"
+    },
+    {
+      "wallpaper_id": "wp-fc490ca45c00b1249bbe3554a4fdf6fb",
+      "media_type": "image",
+      "file_url": "image/wp-fc490ca45c00b1249bbe3554a4fdf6fb.jpeg",
+      "device": "Desktop",
+      "tags": ["二次元", "卡拉彼丘", "艾卡", "明", "令", "玛拉", "珐格兰丝"],
+      "created_at": "2026-02-27 17:00:00"
+    },
+    {
+      "wallpaper_id": "wp-3295c76acbf4caaed33c36b1b5fc2cb1",
+      "media_type": "image",
+      "file_url": "image/wp-3295c76acbf4caaed33c36b1b5fc2cb1.jpeg",
+      "device": "Desktop",
+      "tags": ["二次元", "卡拉彼丘", "星绘", "玛拉"],
+      "created_at": "2026-02-27 17:00:00"
+    },
+    {
+      "wallpaper_id": "wp-735b90b4568125ed6c3f678819b6e058",
+      "media_type": "image",
+      "file_url": "image/wp-735b90b4568125ed6c3f678819b6e058.jpeg",
+      "device": "Desktop",
+      "tags": ["二次元", "卡拉彼丘", "米雪儿", "绯莎", "珐格兰丝", "忧雾"],
+      "created_at": "2026-02-27 17:00:00"
+    },
+    {
+      "wallpaper_id": "wp-a3f390d88e4c41f2747bfa2f1b5f87db",
+      "media_type": "image",
+      "file_url": "image/wp-a3f390d88e4c41f2747bfa2f1b5f87db.jpeg",
+      "device": "Desktop",
+      "tags": ["二次元", "卡拉彼丘", "白墨", "芙拉薇娅", "莉莉丝", "梅瑞狄斯"],
+      "created_at": "2026-02-27 17:00:00"
+    },
+    {
+      "wallpaper_id": "wp-14bfa6bb14875e45bba028a21ed38046",
+      "media_type": "image",
+      "file_url": "image/wp-14bfa6bb14875e45bba028a21ed38046.jpeg",
+      "device": "Desktop",
+      "tags": ["二次元", "卡拉彼丘", "香奈美", "米雪儿", "忧雾"],
+      "created_at": "2026-02-27 17:00:00"
     }
   ]
 }
