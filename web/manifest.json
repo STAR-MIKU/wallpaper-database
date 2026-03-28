@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Moon Startpage",
+  "version": "1.0.0",
+  "description": "一个美观的浏览器起始页扩展，支持自定义背景、快捷访问、搜索引擎集成和主题切换",
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": ["storage"],
+  "icons": {
+    "16": "icons/logo.png",
+    "48": "icons/logo.png",
+    "128": "icons/logo.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "moon-startpage@example.com",
+      "strict_min_version": "109.0"
+    }
+  }
+}
