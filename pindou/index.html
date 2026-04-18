@@ -6,10 +6,25 @@
   <title>拼豆日记</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'></text></svg>" type="image/svg+xml">
   <style>
+    @font-face {
+      font-family: 'PatternFont';
+      src: url('fonts/ChillaxBold.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+      unicode-range: U+0000-007F, U+00A0-00FF, U+0100-024F, U+0370-03FF, U+0400-04FF, U+2000-206F, U+2070-209F, U+20A0-20CF, U+2100-214F, U+2150-218F, U+2190-21FF, U+2200-22FF, U+2300-23FF, U+2460-24FF, U+2500-257F, U+2580-259F, U+25A0-25FF, U+2600-26FF, U+2700-27BF, U+FE30-FE4F, U+FF00-FFEF;
+    }
+    @font-face {
+      font-family: 'PatternFont';
+      src: url('fonts/AlimamaShuHeiTi.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      unicode-range: U+2E80-9FFF, U+3000-303F, U+3040-309F, U+30A0-30FF, U+3100-312F, U+3130-318F, U+3200-32FF, U+3300-33FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FF00-FFEF, U+1D400-1D7FF, U+20000-2A6DF, U+2A700-2B73F, U+2B740-2B81F, U+2B820-2CEAF, U+2CEB0-2EBEF, U+30000-3134F, U+E000-F8FF;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body { width: 100%; height: 100%; overflow: hidden; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+      font-family: 'PatternFont', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -2061,7 +2076,7 @@ function drawPattern() {
   const showCodes = document.getElementById('showCodes').checked;
   if (showCodes && zoom >= 0.35) {
     const fs = Math.min(9, CELL * 0.42);
-    ctx.font = 'bold ' + fs + 'px -apple-system, sans-serif';
+    ctx.font = 'bold ' + fs + 'px "PatternFont", sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
@@ -2075,7 +2090,7 @@ function drawPattern() {
     }
   }
 
-  ctx.fillStyle = '#555'; ctx.font = '9px -apple-system, sans-serif';
+  ctx.fillStyle = '#555'; ctx.font = '9px "PatternFont", sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
   for (let x = 0; x < W; x++) ctx.fillText(x + 1, AXIS_M + x * CELL + CELL / 2, AXIS_M - 3);
   ctx.textAlign = 'center'; ctx.textBaseline = 'top';
@@ -2134,6 +2149,8 @@ window.addEventListener('mouseup', () => { panning = false; });
 /* ── Touch events: pinch zoom, rotate, pan, tap ── */
 let touchStartDist = 0, touchStartZoom = 1, touchStartPanX = 0, touchStartPanY = 0;
 let touchStartAngle = 0, touchStartRotation = 0;
+let touchStartMx = 0, touchStartMy = 0;
+let touchStartContentX = 0, touchStartContentY = 0;
 let touchPanStartX = 0, touchPanStartY = 0;
 let isTouchPanning = false;
 let touchTapTimer = null;
@@ -2147,34 +2164,36 @@ function getRotationCenter() {
   return { cx: pattern.width * CELL / 2 + AXIS_M, cy: pattern.height * CELL / 2 + AXIS_M };
 }
 
-// Map screen coordinates to pattern coordinates (accounting for pan, zoom, rotation)
+// Map screen coordinates to pattern coordinates
+// Transform chain: pattern → translate(-cx,-cy) → rotate → translate(cx,cy) → scale(zoom) → translate(pan) → screen
+// Inverse: screen → translate(-pan) → scale(1/zoom) → translate(-cx,-cy) → rotate(-r) → translate(cx,cy) → pattern
 function screenToPattern(sx, sy) {
   const { cx, cy } = getRotationCenter();
-  // Step 1: Subtract pan
   let x = sx - panX;
   let y = sy - panY;
-  // Step 2: Undo rotation
+  x = x / zoom;
+  y = y / zoom;
+  let dx = x - cx;
+  let dy = y - cy;
   const cosR = Math.cos(-currentRotation);
   const sinR = Math.sin(-currentRotation);
-  let rx = cx + (x - cx) * cosR - (y - cy) * sinR;
-  let ry = cy + (x - cx) * sinR + (y - cy) * cosR;
-  // Step 3: Undo zoom
-  rx = rx / zoom;
-  ry = ry / zoom;
-  return { x: rx, y: ry };
+  x = cx + dx * cosR - dy * sinR;
+  y = cy + dx * sinR + dy * cosR;
+  return { x, y };
 }
 
 // Map pattern coordinates to screen coordinates
 function patternToScreen(px, py) {
   const { cx, cy } = getRotationCenter();
-  // Step 1: Apply zoom
-  let x = px * zoom;
-  let y = py * zoom;
-  // Step 2: Apply rotation
-  let rx = cx + (x - cx) * Math.cos(currentRotation) - (y - cy) * Math.sin(currentRotation);
-  let ry = cy + (x - cx) * Math.sin(currentRotation) + (y - cy) * Math.cos(currentRotation);
-  // Step 3: Apply pan
-  return { x: rx + panX, y: ry + panY };
+  let dx = px - cx;
+  let dy = py - cy;
+  const cosR = Math.cos(currentRotation);
+  const sinR = Math.sin(currentRotation);
+  let x = cx + dx * cosR - dy * sinR;
+  let y = cy + dx * sinR + dy * cosR;
+  x = x * zoom + panX;
+  y = y * zoom + panY;
+  return { x, y };
 }
 
 canvas.addEventListener('touchstart', e => {
@@ -2198,9 +2217,9 @@ canvas.addEventListener('touchstart', e => {
 
     // Store the content position under the gesture center
     const rect = canvas.getBoundingClientRect();
-    const mx = (t1.clientX + t2.clientX) / 2 - rect.left;
-    const my = (t1.clientY + t2.clientY) / 2 - rect.top;
-    const contentPt = screenToPattern(mx, my);
+    touchStartMx = (t1.clientX + t2.clientX) / 2 - rect.left;
+    touchStartMy = (t1.clientY + t2.clientY) / 2 - rect.top;
+    const contentPt = screenToPattern(touchStartMx, touchStartMy);
     touchStartContentX = contentPt.x;
     touchStartContentY = contentPt.y;
   } else if (e.touches.length === 1) {
@@ -2250,17 +2269,18 @@ canvas.addEventListener('touchmove', e => {
     const mx = (t1.clientX + t2.clientX) / 2 - rect.left;
     const my = (t1.clientY + t2.clientY) / 2 - rect.top;
 
-    // Compute new pan so that screenToPattern(mx, my) = touchStartContent
-    // Using inverse transform: screen = pan + center + zoom * R(rotation) * (content - center)
-    // Solve: pan = screen - center - zoom * R(rotation) * (content - center)
+    // Direct computation: newPan = gestureCenter - zoom * R(rotation) * (touchStartContent - center + center)
     const { cx, cy } = getRotationCenter();
-    const dxContent = touchStartContentX - cx;
-    const dyContent = touchStartContentY - cy;
+    const tcx = touchStartContentX;
+    const tcy = touchStartContentY;
     const cosR = Math.cos(currentRotation);
     const sinR = Math.sin(currentRotation);
 
-    panX = mx - cx - nz * (dxContent * cosR - dyContent * sinR);
-    panY = my - cy - nz * (dxContent * sinR + dyContent * cosR);
+    // Forward transform for touchStartContent with new zoom/rotation:
+    // screenX = newPanX + nz * ((tcx-cx)*cos(r) - (tcy-cy)*sin(r) + cx)
+    // We want this to equal (mx, my), so:
+    panX = mx - nz * ((tcx - cx) * cosR - (tcy - cy) * sinR + cx);
+    panY = my - nz * ((tcx - cx) * sinR + (tcy - cy) * cosR + cy);
 
     zoom = nz;
     hasAdjustedZoom = true;
@@ -2339,8 +2359,6 @@ canvas.addEventListener('touchend', e => {
     touchMoved = false;
   }
 }, { passive: true });
-
-let touchStartContentX = 0, touchStartContentY = 0;
 
 /* ── Edit mode ── */
 document.getElementById('editMode').addEventListener('change', e => {
@@ -2972,7 +2990,7 @@ document.getElementById('exportPngBtn').addEventListener('click', () => {
       ctx2.fillRect(AXIS + x * CELL, AXIS + y * CELL, CELL, CELL);
       ctx2.strokeStyle = 'rgba(0,0,0,0.2)'; ctx2.lineWidth = 0.5;
       ctx2.strokeRect(AXIS + x * CELL, AXIS + y * CELL, CELL, CELL);
-      ctx2.fillStyle = '#111'; ctx2.font = 'bold 7px Arial';
+      ctx2.fillStyle = '#111'; ctx2.font = 'bold 7px "PatternFont", Arial, sans-serif';
       ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
       ctx2.fillText(c.code, AXIS + x * CELL + CELL / 2, AXIS + y * CELL + CELL / 2);
     }
@@ -2985,14 +3003,14 @@ document.getElementById('exportPngBtn').addEventListener('click', () => {
   ctx2.strokeStyle = '#333'; ctx2.lineWidth = 1.5;
   ctx2.strokeRect(AXIS, AXIS, W * CELL, H * CELL);
 
-  ctx2.fillStyle = '#444'; ctx2.font = 'bold 10px Arial';
+  ctx2.fillStyle = '#444'; ctx2.font = 'bold 10px "PatternFont", Arial, sans-serif';
   ctx2.textAlign = 'center'; ctx2.textBaseline = 'bottom';
   for (let x = 0; x < W; x++) ctx2.fillText(x + 1, AXIS + x * CELL + CELL / 2, AXIS - 3);
   ctx2.textAlign = 'right'; ctx2.textBaseline = 'middle';
   for (let y = 0; y < H; y++) ctx2.fillText(y + 1, AXIS - 4, AXIS + y * CELL + CELL / 2);
 
   const legTop = AXIS + H * CELL + AXIS + 4;
-  ctx2.font = '10px sans-serif'; ctx2.textBaseline = 'middle';
+  ctx2.font = '10px "PatternFont", sans-serif'; ctx2.textBaseline = 'middle';
   sorted.forEach(([code, count], i) => {
     const c = palette.find(p => p.code === code); if (!c) return;
     const col = i % legendCols, row = Math.floor(i / legendCols);
@@ -3000,7 +3018,7 @@ document.getElementById('exportPngBtn').addEventListener('click', () => {
     ctx2.fillStyle = c.hex; ctx2.fillRect(lx, ly, 18, 18);
     ctx2.strokeStyle = '#ccc'; ctx2.lineWidth = 0.5; ctx2.strokeRect(lx, ly, 18, 18);
     ctx2.fillStyle = '#333'; ctx2.textAlign = 'left';
-    ctx2.font = 'bold 10px sans-serif';
+    ctx2.font = 'bold 10px "PatternFont", sans-serif';
     ctx2.fillText(code + ' (' + count + ')', lx + 22, ly + 10);
   });
 
@@ -3012,7 +3030,7 @@ document.getElementById('exportPngBtn').addEventListener('click', () => {
 });
 
 /* ── Export PDF (A4, pattern grid top, color list bottom) ── */
-document.getElementById('exportPdfBtn').addEventListener('click', () => {
+document.getElementById('exportPdfBtn').addEventListener('click', async () => {
   if (!pattern) { showToast('请先生成图案'); return; }
   if (typeof window.jspdf === 'undefined') { showToast('PDF 库未加载，请稍后再试'); return; }
 
@@ -3022,6 +3040,23 @@ document.getElementById('exportPdfBtn').addEventListener('click', () => {
   const palette = BEAD_PALETTES[brand].colors;
   const sorted = Object.entries(colorCounts).sort((a, b) => b[1] - a[1]);
   const numColors = sorted.length;
+
+  let customFontReady = false;
+  try {
+    const [cnFontData, enFontData] = await Promise.all([
+      fetch('fonts/AlimamaShuHeiTi.ttf').then(r => r.arrayBuffer()),
+      fetch('fonts/ChillaxBold.otf').then(r => r.arrayBuffer())
+    ]);
+    const cnBase64 = btoa(String.fromCharCode(...new Uint8Array(cnFontData)));
+    const enBase64 = btoa(String.fromCharCode(...new Uint8Array(enFontData)));
+    jsPDF.API.addFileToVFS('AlimamaShuHeiTi.ttf', cnBase64);
+    jsPDF.API.addFont('AlimamaShuHeiTi.ttf', 'AlimamaShuHeiTi', 'normal');
+    jsPDF.API.addFileToVFS('ChillaxBold.otf', enBase64);
+    jsPDF.API.addFont('ChillaxBold.otf', 'ChillaxBold', 'normal');
+    customFontReady = true;
+  } catch (e) {
+    console.warn('自定义字体加载失败，使用默认字体', e);
+  }
 
   const numPages = Math.ceil(numColors / 50);
 
@@ -3062,7 +3097,7 @@ document.getElementById('exportPdfBtn').addEventListener('click', () => {
           ctx.strokeRect(x * canvasCell, y * canvasCell, canvasCell, canvasCell);
 
           const fSize = Math.max(canvasCell * 0.45, 9);
-          ctx.font = 'bold ' + fSize + 'px Arial, sans-serif';
+          ctx.font = 'bold ' + fSize + 'px "PatternFont", Arial, sans-serif';
           ctx.fillStyle = '#111';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
@@ -3081,10 +3116,18 @@ document.getElementById('exportPdfBtn').addEventListener('click', () => {
 
     doc.setFontSize(12);
     doc.setTextColor(51, 51, 51);
-    doc.setFont(undefined, 'bold');
+    if (customFontReady) {
+      doc.setFont('AlimamaShuHeiTi', 'normal');
+    } else {
+      doc.setFont(undefined, 'bold');
+    }
     doc.text('Bead Pattern ' + W + 'x' + H, margin, margin + 5);
     doc.setFontSize(7);
-    doc.setFont(undefined, 'normal');
+    if (customFontReady) {
+      doc.setFont('ChillaxBold', 'normal');
+    } else {
+      doc.setFont(undefined, 'normal');
+    }
     doc.setTextColor(150, 150, 150);
     var brandName = BEAD_PALETTES[brand].name.replace(/[^A-Za-z0-9\s\-&]/g, '').trim();
     doc.text(brandName + ' | ' + numColors + ' colors | ' + totalBeads + ' beads', margin, margin + 9);
@@ -3098,7 +3141,8 @@ document.getElementById('exportPdfBtn').addEventListener('click', () => {
 
     doc.setFontSize(Math.max(numLabelH * 0.6, 2.5));
     doc.setTextColor(140, 140, 140);
-    doc.setFont(undefined, 'normal');
+    if (customFontReady) doc.setFont('ChillaxBold', 'normal');
+    else doc.setFont(undefined, 'normal');
     for (let x = 0; x < W; x++) {
       const label = String(x + 1);
       const tw = doc.getTextWidth(label);
@@ -3113,9 +3157,11 @@ document.getElementById('exportPdfBtn').addEventListener('click', () => {
     const legendY = gridImgY + gridImgH + 5;
     doc.setFontSize(8);
     doc.setTextColor(60, 60, 60);
-    doc.setFont(undefined, 'bold');
+    if (customFontReady) doc.setFont('AlimamaShuHeiTi', 'normal');
+    else doc.setFont(undefined, 'bold');
     doc.text('Color Legend / Material List', margin, legendY);
-    doc.setFont(undefined, 'normal');
+    if (customFontReady) doc.setFont('AlimamaShuHeiTi', 'normal');
+    else doc.setFont(undefined, 'normal');
 
     let lX = margin;
     let lY = legendY + 4;
@@ -3148,6 +3194,8 @@ document.getElementById('exportPdfBtn').addEventListener('click', () => {
 
       doc.setFontSize(8);
       doc.setTextColor(60, 60, 60);
+      if (customFontReady) doc.setFont('AlimamaShuHeiTi', 'normal');
+      else doc.setFont(undefined, 'normal');
       doc.text(label, lX + swatchW + swatchGap, lY + swatchR + 1);
 
       lX += itemW + 3;
@@ -3373,10 +3421,25 @@ function updateCtrlBtnStates() {
   document.getElementById('resetZoomBtn').style.display = hasAdjustedZoom ? 'flex' : 'none';
 }
 
+/* ── Font Preloading ── */
+async function preloadFonts() {
+  try {
+    await document.fonts.ready;
+    await Promise.allSettled([
+      document.fonts.load('12px "AlimamaShuHeiTi"'),
+      document.fonts.load('12px "ChillaxBold"')
+    ]);
+  } catch (e) {
+    console.warn('字体预加载失败', e);
+  }
+}
+
 /* ── Init ── */
-generateStaticPattern();
-renderHistoryCards();
-updateCtrlBtnStates();
+preloadFonts().then(() => {
+  generateStaticPattern();
+  renderHistoryCards();
+  updateCtrlBtnStates();
+});
 
 document.getElementById('resetZoomBtn').addEventListener('click', e => {
   e.stopPropagation();

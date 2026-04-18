@@ -10,7 +10,7 @@ const PixelTextGenerator = {
     const ctx = cvs.getContext("2d");
 
     // Measure text
-    const font = `bold ${fontSize}px "Zpix", "WenQuanYi Bitmap Song", monospace`;
+    const font = `bold ${fontSize}px "PatternFont", "Zpix", "WenQuanYi Bitmap Song", monospace`;
     ctx.font = font;
     const metrics = ctx.measureText(text);
     const textW = Math.ceil(metrics.width);

@@ -1929,7 +1929,7 @@ class BeadPatternApp {
     // ── Colour codes ──
     if (this.showCodes && this.zoom >= 0.35) {
       const fs = Math.min(10, CELL * 0.42);
-      ctx.font = `bold ${fs}px -apple-system, sans-serif`;
+      ctx.font = `bold ${fs}px "PatternFont", sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       for (let y = 0; y < H; y++) {
@@ -1946,7 +1946,7 @@ class BeadPatternApp {
 
     // ── Axis numbers (all 4 sides) ──
     ctx.fillStyle = '#555';
-    ctx.font = '9px -apple-system, sans-serif';
+    ctx.font = '9px "PatternFont", sans-serif';
 
     // Top
     ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
@@ -2247,7 +2247,7 @@ class BeadPatternApp {
         ctx.fillRect(AXIS + x * CELL, AXIS + y * CELL, CELL, CELL);
         // code
         const fs = Math.min(10, CELL * 0.42);
-        ctx.font = `bold ${fs}px sans-serif`;
+        ctx.font = `bold ${fs}px "PatternFont", sans-serif`;
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         const br = (c.rgb.r * 299 + c.rgb.g * 587 + c.rgb.b * 114) / 1000;
         ctx.fillStyle = br > 140 ? '#000' : '#FFF';
@@ -2286,7 +2286,7 @@ class BeadPatternApp {
     }
 
     // Axis labels — all 4 sides
-    ctx.fillStyle = '#555'; ctx.font = '9px sans-serif';
+    ctx.fillStyle = '#555'; ctx.font = '9px "PatternFont", sans-serif';
 
     // Top
     ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
@@ -2310,7 +2310,7 @@ class BeadPatternApp {
 
     // Legend — horizontal color-bar style
     const legTop = AXIS + H * CELL + AXIS + 4;
-    ctx.font = '11px sans-serif'; ctx.textBaseline = 'middle';
+    ctx.font = '11px "PatternFont", sans-serif'; ctx.textBaseline = 'middle';
     sorted.forEach(([code, count], i) => {
       const c = palette.find(p => p.code === code); if (!c) return;
       const col = i % legendCols, row = Math.floor(i / legendCols);
@@ -2322,9 +2322,9 @@ class BeadPatternApp {
       ctx.strokeRect(lx, ly, 20, 20);
       // Code + count label
       ctx.fillStyle = '#333'; ctx.textAlign = 'left';
-      ctx.font = 'bold 11px sans-serif';
+      ctx.font = 'bold 11px "PatternFont", sans-serif';
       ctx.fillText(`${code}`, lx + 24, ly + 7);
-      ctx.font = '10px sans-serif'; ctx.fillStyle = '#666';
+      ctx.font = '10px "PatternFont", sans-serif'; ctx.fillStyle = '#666';
       ctx.fillText(`(${count})`, lx + 24, ly + 18);
     });
 
@@ -2333,7 +2333,7 @@ class BeadPatternApp {
       ctx.save();
       ctx.globalAlpha = 0.18;
       ctx.fillStyle = '#000';
-      ctx.font = 'bold 36px sans-serif';
+      ctx.font = 'bold 36px "PatternFont", sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       const wmText = 'BeadPattern.app';
       // Diagonal watermarks
@@ -2490,7 +2490,7 @@ class BeadPatternApp {
 
   /* ═══════════ PDF Export ═══════════ */
 
-  _exportPDF() {
+  async _exportPDF() {
     if (!this.pattern) return;
     if (typeof window.jspdf === 'undefined') {
       alert('PDF 库加载中，请稍后再试');
@@ -2503,6 +2503,23 @@ class BeadPatternApp {
     const palette = BEAD_PALETTES[brand].colors;
     const sorted  = Object.entries(colorCounts).sort((a, b) => b[1] - a[1]);
 
+    let customFontReady = false;
+    try {
+      const [cnFontData, enFontData] = await Promise.all([
+        fetch('fonts/AlimamaShuHeiTi.ttf').then(r => r.arrayBuffer()),
+        fetch('fonts/ChillaxBold.otf').then(r => r.arrayBuffer())
+      ]);
+      const cnBase64 = btoa(String.fromCharCode(...new Uint8Array(cnFontData)));
+      const enBase64 = btoa(String.fromCharCode(...new Uint8Array(enFontData)));
+      jsPDF.API.addFileToVFS('AlimamaShuHeiTi.ttf', cnBase64);
+      jsPDF.API.addFont('AlimamaShuHeiTi.ttf', 'AlimamaShuHeiTi', 'normal');
+      jsPDF.API.addFileToVFS('ChillaxBold.otf', enBase64);
+      jsPDF.API.addFont('ChillaxBold.otf', 'ChillaxBold', 'normal');
+      customFontReady = true;
+    } catch (e) {
+      console.warn('自定义字体加载失败，使用默认字体', e);
+    }
+
     // A4 landscape for wide patterns
     const isWide = W > H;
     const doc = new jsPDF({ orientation: isWide ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
@@ -2511,8 +2528,10 @@ class BeadPatternApp {
     const margin = 10;
 
     // ── Page 1: Full overview ──
+    if (customFontReady) doc.setFont('AlimamaShuHeiTi', 'normal');
     doc.setFontSize(16);
     doc.text('拼豆图案', margin, margin + 6);
+    if (customFontReady) doc.setFont('ChillaxBold', 'normal');
     doc.setFontSize(9);
     doc.text(`${W}×${H} | ${Object.keys(colorCounts).length}色 | ${totalBeads}珠 | ${BEAD_PALETTES[brand].name}`, margin, margin + 12);
 
@@ -2545,6 +2564,7 @@ class BeadPatternApp {
 
     // Watermark for free
     if (!this.isPro) {
+      if (customFontReady) doc.setFont('ChillaxBold', 'normal');
       doc.setFontSize(28);
       doc.setTextColor(200, 200, 200);
       doc.text('BeadPattern.app', pageW / 2, pageH / 2, { align: 'center', angle: 30 });
@@ -2565,7 +2585,9 @@ class BeadPatternApp {
         const bw = endX - startX, bh = endY - startY;
 
         doc.setFontSize(10);
+        if (customFontReady) doc.setFont('AlimamaShuHeiTi', 'normal');
         doc.text(`拼豆板 ${br * boardCols + bc + 1} / ${boardCols * boardRows}  (行${br+1} 列${bc+1})`, margin, margin + 4);
+        if (customFontReady) doc.setFont('ChillaxBold', 'normal');
         doc.setFontSize(8);
         doc.text(`坐标范围: (${startX+1},${startY+1}) ~ (${endX},${endY})`, margin, margin + 9);
 
@@ -2589,7 +2611,7 @@ class BeadPatternApp {
             bCtx.fillRect(px, py, boardCellPx, boardCellPx);
             // Code text
             const fs = Math.min(8, boardCellPx * 0.45);
-            bCtx.font = `bold ${fs}px sans-serif`;
+            bCtx.font = `bold ${fs}px "PatternFont", sans-serif`;
             bCtx.textAlign = 'center'; bCtx.textBaseline = 'middle';
             const br2 = (c.rgb.r * 299 + c.rgb.g * 587 + c.rgb.b * 114) / 1000;
             bCtx.fillStyle = br2 > 140 ? '#000' : '#FFF';
@@ -2607,7 +2629,7 @@ class BeadPatternApp {
           bCtx.lineTo(boardAxisPx+bw*boardCellPx, boardAxisPx+y*boardCellPx); bCtx.stroke();
         }
         // Axis labels
-        bCtx.fillStyle = '#555'; bCtx.font = '8px sans-serif';
+        bCtx.fillStyle = '#555'; bCtx.font = '8px "PatternFont", sans-serif';
         bCtx.textAlign = 'center'; bCtx.textBaseline = 'bottom';
         for (let x = 0; x < bw; x++)
           bCtx.fillText(startX + x + 1, boardAxisPx + x * boardCellPx + boardCellPx / 2, boardAxisPx - 2);
@@ -2630,13 +2652,16 @@ class BeadPatternApp {
 
     // ── Last page: Materials list ──
     doc.addPage();
+    if (customFontReady) doc.setFont('AlimamaShuHeiTi', 'normal');
     doc.setFontSize(14);
     doc.text('材料清单', margin, margin + 6);
+    if (customFontReady) doc.setFont('ChillaxBold', 'normal');
     doc.setFontSize(9);
     doc.text(`品牌: ${BEAD_PALETTES[brand].name}  |  总珠数: ${totalBeads}`, margin, margin + 13);
 
     let listY = margin + 20;
     doc.setFontSize(8);
+    if (customFontReady) doc.setFont('AlimamaShuHeiTi', 'normal');
     sorted.forEach(([code, count]) => {
       const c = palette.find(p => p.code === code);
       if (!c) return;
