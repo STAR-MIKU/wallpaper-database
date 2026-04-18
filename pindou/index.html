@@ -2140,8 +2140,42 @@ let touchTapTimer = null;
 let isTouchDragging = false;
 let lastTapX = 0, lastTapY = 0;
 let touchMoved = false;
-let rafId = null; // For requestAnimationFrame optimization
-let needsRedraw = false;
+let rafId = null;
+
+// Compute rotation center in pattern coordinates
+function getRotationCenter() {
+  return { cx: pattern.width * CELL / 2 + AXIS_M, cy: pattern.height * CELL / 2 + AXIS_M };
+}
+
+// Map screen coordinates to pattern coordinates (accounting for pan, zoom, rotation)
+function screenToPattern(sx, sy) {
+  const { cx, cy } = getRotationCenter();
+  // Step 1: Subtract pan
+  let x = sx - panX;
+  let y = sy - panY;
+  // Step 2: Undo rotation
+  const cosR = Math.cos(-currentRotation);
+  const sinR = Math.sin(-currentRotation);
+  let rx = cx + (x - cx) * cosR - (y - cy) * sinR;
+  let ry = cy + (x - cx) * sinR + (y - cy) * cosR;
+  // Step 3: Undo zoom
+  rx = rx / zoom;
+  ry = ry / zoom;
+  return { x: rx, y: ry };
+}
+
+// Map pattern coordinates to screen coordinates
+function patternToScreen(px, py) {
+  const { cx, cy } = getRotationCenter();
+  // Step 1: Apply zoom
+  let x = px * zoom;
+  let y = py * zoom;
+  // Step 2: Apply rotation
+  let rx = cx + (x - cx) * Math.cos(currentRotation) - (y - cy) * Math.sin(currentRotation);
+  let ry = cy + (x - cx) * Math.sin(currentRotation) + (y - cy) * Math.cos(currentRotation);
+  // Step 3: Apply pan
+  return { x: rx + panX, y: ry + panY };
+}
 
 canvas.addEventListener('touchstart', e => {
   if (!pattern || e.target.closest('.detail-header')) return;
@@ -2161,6 +2195,14 @@ canvas.addEventListener('touchstart', e => {
     touchStartPanY = panY;
     touchStartAngle = Math.atan2(dy, dx);
     touchStartRotation = currentRotation;
+
+    // Store the content position under the gesture center
+    const rect = canvas.getBoundingClientRect();
+    const mx = (t1.clientX + t2.clientX) / 2 - rect.left;
+    const my = (t1.clientY + t2.clientY) / 2 - rect.top;
+    const contentPt = screenToPattern(mx, my);
+    touchStartContentX = contentPt.x;
+    touchStartContentY = contentPt.y;
   } else if (e.touches.length === 1) {
     // One-finger: pan or tap to edit
     isTouchPanning = false;
@@ -2203,13 +2245,23 @@ canvas.addEventListener('touchmove', e => {
     const angleDiff = angle - touchStartAngle;
     currentRotation = touchStartRotation + angleDiff;
 
-    // Center point between two fingers
+    // Pan: ensure the content point under gesture center stays fixed
     const rect = canvas.getBoundingClientRect();
     const mx = (t1.clientX + t2.clientX) / 2 - rect.left;
     const my = (t1.clientY + t2.clientY) / 2 - rect.top;
 
-    panX = mx - (mx - touchStartPanX) * (nz / touchStartZoom) - (mx - panX) * (nz / zoom - 1);
-    panY = my - (my - touchStartPanY) * (nz / touchStartZoom) - (my - panY) * (nz / zoom - 1);
+    // Compute new pan so that screenToPattern(mx, my) = touchStartContent
+    // Using inverse transform: screen = pan + center + zoom * R(rotation) * (content - center)
+    // Solve: pan = screen - center - zoom * R(rotation) * (content - center)
+    const { cx, cy } = getRotationCenter();
+    const dxContent = touchStartContentX - cx;
+    const dyContent = touchStartContentY - cy;
+    const cosR = Math.cos(currentRotation);
+    const sinR = Math.sin(currentRotation);
+
+    panX = mx - cx - nz * (dxContent * cosR - dyContent * sinR);
+    panY = my - cy - nz * (dxContent * sinR + dyContent * cosR);
+
     zoom = nz;
     hasAdjustedZoom = true;
     touchMoved = true;
@@ -2266,17 +2318,9 @@ canvas.addEventListener('touchend', e => {
       const my = t.clientY - rect.top;
 
       // Handle rotation when calculating grid coordinates
-      const centerX = canvas.width / dpr / 2;
-      const centerY = canvas.height / dpr / 2;
-      const dx = mx - centerX;
-      const dy = my - centerY;
-      const cosR = Math.cos(-currentRotation);
-      const sinR = Math.sin(-currentRotation);
-      const rotatedMx = centerX + dx * cosR - dy * sinR;
-      const rotatedMy = centerY + dx * sinR + dy * cosR;
-
-      const gx = Math.floor(((rotatedMx - panX) / zoom - AXIS_M) / CELL);
-      const gy = Math.floor(((rotatedMy - panY) / zoom - AXIS_M) / CELL);
+      const pt = screenToPattern(mx, my);
+      const gx = Math.floor((pt.x - AXIS_M) / CELL);
+      const gy = Math.floor((pt.y - AXIS_M) / CELL);
       if (gx >= 0 && gx < pattern.width && gy >= 0 && gy < pattern.height && pattern.grid[gy] && pattern.grid[gy][gx]) {
         if (editMode) {
           openBeadPicker(gx, gy, t.clientX, t.clientY);
@@ -2295,6 +2339,8 @@ canvas.addEventListener('touchend', e => {
     touchMoved = false;
   }
 }, { passive: true });
+
+let touchStartContentX = 0, touchStartContentY = 0;
 
 /* ── Edit mode ── */
 document.getElementById('editMode').addEventListener('change', e => {
@@ -2364,8 +2410,20 @@ function openBeadPicker(gx, gy, px, py) {
 
   searchInput.oninput = () => renderSwatches(searchInput.value);
 
+  // Prevent auto-focus to avoid triggering mobile keyboard
+  searchInput.setAttribute('readonly', 'readonly');
+  searchInput.value = '';
+
   picker.classList.remove('hidden');
-  searchInput.focus();
+
+  // Allow keyboard only when user explicitly taps the search input
+  searchInput.onclick = function(e) {
+    e.stopPropagation();
+    if (this.hasAttribute('readonly')) {
+      this.removeAttribute('readonly');
+      this.focus();
+    }
+  };
 
   setTimeout(() => {
     window._pickerOutsideHandler = e => {
