@@ -1,0 +1,3514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>拼豆日记</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'></text></svg>" type="image/svg+xml">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { width: 100%; height: 100%; overflow: hidden; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #1a1a1a;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .phone-frame {
+      width: 420px;
+      height: 900px;
+      max-width: 100%;
+      max-height: 100vh;
+      position: relative;
+      overflow: hidden;
+      border-radius: 48px;
+    }
+    @media (max-width: 430px) {
+      .phone-frame {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .bg-layer { border-radius: 0; }
+    }
+    .bg-layer {
+      position: absolute;
+      inset: -40px;
+      z-index: 0;
+      overflow: hidden;
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 25%, #93c5fd 50%, #bfdbfe 75%, #fef3c7 100%);
+    }
+    .bg-char {
+      position: absolute;
+      width: 350px; height: 350px;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.6;
+      filter: drop-shadow(0 8px 32px rgba(251,191,36,0.3));
+    }
+    .bg-blur {
+      position: absolute;
+      inset: 0;
+      filter: blur(70px);
+    }
+    .bg-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.05) 100%);
+    }
+    .app-content {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ===== HOME PAGE ===== */
+    .home-page {
+      width: 100%;
+      height: 100%;
+      padding: 56px 16px 0px;
+      display: flex;
+      flex-direction: column;
+    }
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .header-actions-group {
+      display: flex;
+      gap: 10px;
+    }
+    .app-title {
+      color: #fff;
+      font-size: 25px;
+      font-weight: 900;
+      margin-left: 6px;
+      letter-spacing: 4px;
+    }
+    .layout-toggle-btn {
+      width: 44px;
+      height: 44px;
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.6);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .layout-toggle-btn:hover { background: rgba(255,255,255,0.95); }
+    .layout-toggle-btn:active { transform: scale(0.92); }
+    .layout-toggle-btn svg {
+      width: 22px;
+      height: 22px;
+      color: #1a1a1a;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    svg#headerNewCanvasIcon {
+      width: 20px;
+      height: 20px;
+      color: #000000;
+      opacity: 1;
+    }
+    .section-title {
+      color: rgba(255,255,255,0.9);
+      font-size: 18px;
+      font-weight: 600;
+      margin-top: 24px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, rgba(255,255,255,0.3), transparent);
+    }
+    .card-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      padding-bottom: calc(28px + 68px + 20px);
+      scrollbar-width: none;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-container::-webkit-scrollbar { display: none; }
+    .card-container.layout-transitioning {
+      animation: layoutFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-container.layout-transitioning .work-card {
+      animation: cardFadeScale 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes layoutFadeIn {
+      from { opacity: 0.7; }
+      to { opacity: 1; }
+    }
+    @keyframes cardFadeScale {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+    .card-container.dual-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      align-content: start;
+      overflow-y: auto;
+      padding-bottom: calc(28px + 68px + 20px);
+      scrollbar-width: none;
+    }
+    .card-container.dual-column .work-card {
+      width: 100%;
+      height: auto;
+      border-radius: 20px;
+    }
+    .card-container.dual-column .card-avatar {
+      height: 0;
+      flex: 1;
+      min-height: 100px;
+    }
+    .card-container.dual-column .card-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .card-container.slide-up {
+      animation: containerSlideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    @keyframes containerSlideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .work-card {
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(36px);
+      -webkit-backdrop-filter: blur(36px);
+      border-radius: 20px;
+      padding: 8px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+    }
+    .card-container.dual-column .work-card {
+      border-radius: 20px;
+    }
+    .work-card:active { transform: scale(0.98); }
+    .card-avatar {
+      width: 100%;
+      height: auto;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.9);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      flex-shrink: 0;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-avatar svg { width: 82px; height: 82px; }
+    .card-avatar img { width: 100%; height: auto; display: block; image-rendering: pixelated; -webkit-user-drag: none; user-select: none; border-radius: inherit; }
+    .card-info { width: 100%; padding: 2px 6px; }
+    .card-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 2px;
+    }
+    .card-time {
+      font-size: 10px;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .card-time::before {
+      content: '⏱';
+      font-size: 10px;
+    }
+    .card-delete-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 24px;
+      height: 24px;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      z-index: 2;
+      line-height: 1;
+    }
+    .work-card:hover .card-delete-btn,
+    .work-card:active .card-delete-btn { display: flex; }
+    .card-delete-btn:active { transform: scale(0.9); background: rgba(239,68,68,0.8); }
+
+    /* ===== NEW CANVAS MODAL ===== */
+    .canvas-modal { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; }
+    .canvas-modal.hidden { display: none; }
+    .new-canvas-box { background: #fff; border-radius: 22px; width: 90%; max-width: 360px; padding: 24px; position: relative; }
+    .new-canvas-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .new-canvas-header h2 { font-size: 20px; font-weight: 700; color: #1a1a1a; }
+    .modal-close { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border-radius: 50%; border: none; background: rgba(0,0,0,0.06); font-size: 20px; cursor: pointer; color: #1a1a1a; display: flex; align-items: center; justify-content: center; }
+    .modal-close:active { background: rgba(0,0,0,0.12); }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 600; color: #333; margin-bottom: 8px; }
+    .form-input-row { display: flex; gap: 12px; align-items: center; }
+    .form-input { flex: 1; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 15px; outline: none; transition: border-color 0.2s; }
+    .form-input:focus { border-color: #3b82f6; }
+    .form-divider { color: #9ca3af; font-size: 14px; }
+    .form-actions { display: flex; gap: 10px; margin-top: 24px; }
+    .form-btn { flex: 1; padding: 12px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .form-btn:active { transform: scale(0.97); }
+    .form-btn-cancel { background: #f3f4f6; color: #374151; }
+    .form-btn-primary { background: #3b82f6; color: #fff; }
+    .form-btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
+
+    /* ===== CONFIRM DELETE MODAL ===== */
+    .confirm-modal { position: fixed; inset: 0; z-index: 301; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; }
+    .confirm-modal.hidden { display: none; }
+    .confirm-box { background: #fff; border-radius: 22px; width: 85%; max-width: 320px; padding: 24px; text-align: center; }
+    .confirm-box h3 { font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
+    .confirm-box p { font-size: 14px; color: #6b7280; margin-bottom: 24px; line-height: 1.5; }
+    .confirm-actions { display: flex; gap: 10px; }
+    .confirm-btn { flex: 1; padding: 12px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .confirm-btn:active { transform: scale(0.97); }
+    .confirm-btn-cancel { background: #f3f4f6; color: #374151; }
+    .confirm-btn-danger { background: #ef4444; color: #fff; }
+
+    /* ===== DETAIL PAGE ===== */
+    .detail-page {
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      padding: 56px 16px 120px;
+    }
+    .detail-page.active { display: flex; }
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .back-btn {
+      width: 44px; height: 44px;
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border: none;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: auto;
+      z-index: 10;
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.95); }
+    .back-btn:active { transform: scale(0.92); }
+    .back-btn svg { width: 22px; height: 22px; stroke: #1a1a1a; stroke-width: 2.5; }
+    .header-actions { display: flex; gap: 10px; align-items: center; }
+    .square-btn, .menu-btn {
+      width: 44px; height: 44px;
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border: none;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+    .square-btn:hover, .menu-btn:hover { background: rgba(255,255,255,0.95); }
+    .square-btn:active, .menu-btn:active { transform: scale(0.92); }
+    .square-btn-inner {
+      width: 18px; height: 18px;
+      background: #1a1a1a;
+      border-radius: 4px;
+    }
+    .menu-btn svg { width: 18px; height: 18px; }
+    svg#headerLayoutIcon {
+      width: 22px;
+      height: 22px;
+      color: #000000;
+      opacity: 1;
+    }
+    svg#matBtnSvg {
+      width: 20px;
+      height: 20px;
+      color: #000000;
+    }
+    .mat-btn {
+      height: 44px;
+      padding: 0 14px;
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.6);
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+    .mat-btn:hover { background: rgba(255,255,255,0.95); }
+    .mat-btn svg { opacity: 1; flex-shrink: 0; }
+
+    .mat-dropdown {
+      position: fixed;
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 28px;
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      padding: 6px;
+      min-width: 180px;
+      z-index: 10000;
+      visibility: hidden;
+      opacity: 0;
+      transform-origin: top right;
+      transform: scale(0.95);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .mat-dropdown.show {
+      visibility: visible;
+      opacity: 1;
+      transform: scale(1);
+    }
+    .mat-dropdown-item {
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+      cursor: pointer;
+      transition: all 0.15s;
+      border-radius: 20px;
+    }
+    .mat-dropdown-item:hover { background: rgba(59,130,246,0.1); color: #3b82f6; }
+    .mat-dropdown-item:active { background: rgba(59,130,246,0.18); }
+    .mat-dropdown-danger { color: #ef4444; }
+    .mat-dropdown-danger:hover { background: rgba(239,68,68,0.1); color: #dc2626; }
+
+    .pattern-wrapper {
+      flex: 1;
+      background: #fff;
+      border-radius: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      min-height: 0;
+      position: relative;
+      border: 1px solid rgba(0,0,0,0.04);
+    }
+    .pattern-controls {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 50;
+    }
+    .pat-ctrl-btn.pat-ctrl-reset {
+      height: 32px;
+      width: 32px;
+      padding: 0;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+    .pat-ctrl-btn.pat-ctrl-reset svg { transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    .pat-ctrl-btn.pat-ctrl-reset.rotating svg { transform: rotate(-360deg); }
+    .pat-ctrl-btn#resetZoomBtn { display: none; }
+    .pat-ctrl-btn.pat-ctrl-edit {
+      height: 32px;
+      width: 32px;
+      padding: 0;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      color: rgba(255,255,255,0.4);
+      border: none;
+      cursor: pointer;
+    }
+    .pat-ctrl-btn.pat-ctrl-edit svg {
+      transition: color 0.2s;
+    }
+    .pat-ctrl-btn.pat-ctrl-edit.active {
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+    }
+    .pat-ctrl-group {
+      display: flex;
+      gap: 2px;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 16px;
+      padding: 2px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      height: 32px;
+      align-items: center;
+    }
+    .pat-ctrl-group > .pat-ctrl-btn {
+      height: 28px;
+      width: 28px;
+      padding: 0;
+      border-radius: 14px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .pat-ctrl-group > .pat-ctrl-btn { color: rgba(255,255,255,0.4); transition: color 0.2s; }
+    .pat-ctrl-group > .pat-ctrl-btn.active { color: #fff; background: transparent; }
+    .pat-ctrl-btn {
+      height: 28px;
+      width: 28px;
+      padding: 0;
+      border-radius: 14px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .pat-ctrl-btn.active { background: transparent; color: #fff; }
+    .pattern-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .axis-top {
+      display: flex;
+      margin-bottom: 8px;
+      padding-left: 24px;
+    }
+    .axis-top span {
+      width: 32px; height: 18px;
+      text-align: center;
+      font-size: 10px; font-weight: 700; color: #4b5563;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pattern-body { display: flex; align-items: flex-start; }
+    .axis-left {
+      display: flex;
+      flex-direction: column;
+      margin-right: 6px;
+      padding-top: 2px;
+    }
+    .axis-left span {
+      height: 32px; width: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; color: #4b5563;
+    }
+    .pattern-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 32px);
+      grid-template-rows: repeat(10, 32px);
+      gap: 0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .pattern-cell { width: 32px; height: 32px; }
+
+    /* ===== BOTTOM BAR ===== */
+    .bottom-bar {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      z-index: 100;
+    }
+    .tab-capsule {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      background: rgba(255,255,255,0.35);
+      backdrop-filter: blur(36px);
+      -webkit-backdrop-filter: blur(36px);
+      border-radius: 28px;
+      padding: 4px;
+    }
+    .tab-slider {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 74px;
+      height: 44px;
+      background: rgba(255,255,255,0.5);
+      border-radius: 24px;
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .tab-item {
+      position: relative;
+      z-index: 1;
+      width: 74px; height: 44px;
+      border-radius: 24px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: none; background: transparent;
+      gap: 2px;
+    }
+    .tab-item .tab-icon {
+      width: 15px; height: 15px;
+      background: #6b7280;
+      transform: rotate(45deg);
+      border-radius: 4px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .tab-item.active .tab-icon { background: #3b82f6; }
+    .tab-item .tab-icon-svg {
+      width: 18px; height: 18px;
+      color: #6b7280;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .tab-item.active .tab-icon-svg {
+      color: #3b82f6;
+    }
+    .tab-item .tab-label {
+      font-size: 9px; font-weight: 600; color: #6b7280;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .tab-item.active .tab-label { color: #3b82f6; }
+    .tab-fab {
+      width: 52px; height: 52px;
+      border-radius: 26px;
+      background: rgba(255,255,255,0.35);
+      backdrop-filter: blur(36px);
+      -webkit-backdrop-filter: blur(36px);
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .tab-fab:active { transform: scale(0.95); }
+    .tab-fab-icon {
+      width: 22px; height: 22px;
+      background: #3b82f6;
+      transform: rotate(0);
+      border-radius: 4px;
+    }
+
+    /* ===== MATERIAL PANEL ===== */
+    .material-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 200;
+      display: none; opacity: 0;
+      transition: opacity 0.35s;
+    }
+    .material-overlay.show { display: block; opacity: 1; }
+    .material-panel {
+      position: fixed; top: 0; right: -340px;
+      width: 320px; height: 100vh;
+      background: rgba(255,255,255,0.98);
+      backdrop-filter: blur(36px);
+      -webkit-backdrop-filter: blur(36px);
+      z-index: 201;
+      transition: right 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex; flex-direction: column;
+      border-radius: 24px 0 0 24px;
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+    .material-panel.show { right: 0; }
+    .panel-header {
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      display: flex; justify-content: space-between; align-items: center;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.8), transparent);
+    }
+    .panel-title { font-size: 20px; font-weight: 700; color: #1a1a1a; }
+    .panel-close {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.06);
+      border: none; font-size: 20px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #6b7280; line-height: 1;
+      transition: all 0.2s;
+    }
+    .panel-close:hover { background: rgba(0,0,0,0.1); color: #1a1a1a; }
+    .panel-content { flex: 1; overflow-y: auto; padding: 16px 20px; }
+    .material-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+      transition: all 0.2s;
+    }
+    .material-item:hover { background: rgba(0,0,0,0.02); border-radius: 8px; padding-left: 8px; }
+    .material-swatch {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      border: 2px solid rgba(0,0,0,0.08);
+      flex-shrink: 0;
+    }
+    .material-details { flex: 1; }
+    .material-name { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+    .material-qty { font-size: 12px; color: #6b7280; margin-top: 2px; }
+
+    .page { display: none; width: 100%; height: 100%; }
+    .page.active { display: flex; flex-direction: column; }
+    .page.enter-left { animation: slideLeftIn 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
+    .page.exit-down { animation: slideDownOut 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
+    .page.enter-up { animation: slideUpIn 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
+    .page.exit-right { animation: slideRightOut 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
+    @keyframes slideLeftIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes slideDownOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(100%); } }
+    @keyframes slideUpIn { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideRightOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
+
+    /* ===== Canvas overlay for real pattern ===== */
+    .pattern-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ===== Inline material view (fills pattern-wrapper) ===== */
+    .material-view {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      background: #fff;
+    }
+    .material-view.show { display: flex; }
+    .material-view-header {
+      padding: 20px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a1a1a;
+      text-align: center;
+      flex-shrink: 0;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.8), transparent);
+    }
+    .material-view-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .material-view-content::-webkit-scrollbar { display: none; }
+    .mv-group {
+      background: #f8f9fb;
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+    .mv-group-title {
+      font-size: 13px; font-weight: 700; color: #3b82f6;
+      padding: 0 0 8px;
+      margin-bottom: 6px;
+      letter-spacing: 1px;
+      border-bottom: 1.5px solid rgba(59,130,246,0.15);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .mv-group-title::before {
+      content: '';
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #3b82f6;
+    }
+    .material-view-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 4px;
+      transition: all 0.2s;
+    }
+    .material-view-item:hover { background: rgba(59,130,246,0.05); border-radius: 6px; padding-left: 6px; }
+    .material-view-item:last-child { padding-bottom: 2px; }
+    .material-view-item input[type="checkbox"] {
+      width: 18px; height: 18px;
+      accent-color: #3b82f6;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .mv-swatch {
+      width: 26px; height: 26px;
+      border-radius: 6px;
+      border: 1px solid rgba(0,0,0,0.08);
+      flex-shrink: 0;
+    }
+    .mv-details { flex: 1; min-width: 0; }
+    .mv-name { font-size: 13px; font-weight: 600; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mv-qty { font-size: 12px; color: #6b7280; margin-top: 2px; }
+
+    /* ===== GENERATE PAGE & SETTINGS PAGE ===== */
+    .gen-page, .settings-page {
+      width: 100%;
+      height: 100%;
+      flex-direction: column;
+      padding: 20px 20px calc(28px + 68px + 20px);
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .gen-page::-webkit-scrollbar, .settings-page::-webkit-scrollbar { display: none; }
+    .page-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #fff;
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+    }
+    .page-back-btn {
+      width: 44px; height: 44px;
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border: none;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      border: 1px solid rgba(255,255,255,0.6);
+      flex-shrink: 0;
+    }
+    .page-back-btn:hover { background: rgba(255,255,255,0.95); }
+    .page-back-btn:active { transform: scale(0.92); }
+    .page-back-btn svg { width: 22px; height: 22px; stroke: #fff; stroke-width: 2.5; }
+
+    /* Generate & Settings page simplified cards */
+    .gen-card {
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(36px);
+      -webkit-backdrop-filter: blur(36px);
+      border-radius: 20px;
+      padding: 16px 18px;
+      margin-bottom: 10px;
+      border: none;
+    }
+    .gen-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .gen-card-title .gc-icon {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .menu-card {
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(36px);
+      -webkit-backdrop-filter: blur(36px);
+      border-radius: 20px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: none;
+    }
+    .menu-card:active { transform: scale(0.98); }
+    .menu-card-icon {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .menu-card-info { flex: 1; min-width: 0; }
+    .menu-card-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    .menu-card-desc {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    .mc-upload-area {
+      border: 2px dashed rgba(0,0,0,0.1);
+      border-radius: 14px;
+      padding: 20px 16px;
+      text-align: center;
+      color: #888;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .mc-upload-area:active { border-color: #3b82f6; background: rgba(59,130,246,0.04); }
+    .mc-upload-area p { font-size: 13px; line-height: 1.5; }
+    .mc-preview { margin-top: 10px; border-radius: 10px; overflow: hidden; }
+    .mc-preview img { width: 100%; display: block; border-radius: 10px; }
+    .mc-btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+    .mc-btn:active { transform: scale(0.97); }
+    .mc-btn-primary { background: #3b82f6; color: #fff; }
+    .mc-btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+    .mc-btn-ghost { background: rgba(0,0,0,0.04); color: #333; border: 1px solid rgba(0,0,0,0.08); }
+
+    /* Slider group */
+    .mc-slider-group { margin-bottom: 10px; }
+    .mc-slider-group label { font-size: 12px; color: #555; display: block; margin-bottom: 4px; }
+    .mc-slider-group input[type="range"] { width: 100%; height: 4px; }
+    .mc-slider-group small { font-size: 11px; color: #999; }
+    .mc-select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 10px;
+      font-size: 14px;
+      background: rgba(255,255,255,0.8);
+      color: #333;
+    }
+    .mc-check-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+    .mc-check-row label { font-size: 13px; color: #555; cursor: pointer; }
+    .mc-check-row input[type="checkbox"] { accent-color: #3b82f6; }
+
+    /* ===== Gallery Modal (hidden) ===== */
+    .modal-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; }
+    .modal-overlay.hidden { display: none; }
+    .gallery-box { background: #fff; border-radius: 22px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; padding: 20px; position: relative; }
+    .gallery-header h2 { font-size: 20px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+    .gallery-sub { font-size: 13px; color: #888; margin-bottom: 12px; }
+    .modal-close { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border-radius: 50%; border: none; background: rgba(0,0,0,0.06); font-size: 20px; cursor: pointer; color: #1a1a1a; display: flex; align-items: center; justify-content: center; }
+    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-top: 12px; }
+    .gallery-item { border-radius: 10px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .gallery-item:active { border-color: #3b82f6; transform: scale(0.95); }
+    .gallery-item img { width: 100%; display: block; }
+    .gallery-item span { font-size: 11px; color: #333; display: block; padding: 4px 6px; background: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .gallery-item small { font-size: 10px; color: #999; padding: 0 6px 4px; display: block; }
+    .gallery-mode-switch { display: flex; gap: 6px; margin-bottom: 12px; }
+    .gallery-mode-btn { padding: 6px 12px; border-radius: 16px; border: 1px solid #e0e0e0; background: #fff; font-size: 13px; cursor: pointer; color: #333; }
+    .gallery-mode-btn.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+    .gallery-tabs { display: flex; gap: 8px; margin-bottom: 8px; }
+    .gallery-tabs.hidden { display: none; }
+    .gallery-tab { padding: 6px 14px; border-radius: 16px; background: #f0f0f0; font-size: 13px; cursor: pointer; }
+    .gallery-tab.active { background: #3b82f6; color: #fff; }
+
+    /* ===== Drop zone ===== */
+    .drop-zone { border: 2px dashed #ccc; border-radius: 12px; padding: 20px; text-align: center; color: #888; cursor: pointer; margin-bottom: 12px; transition: all 0.2s; }
+    .drop-zone.dragover { border-color: #3b82f6; background: rgba(59,130,246,0.05); }
+    .drop-zone p { font-size: 14px; line-height: 1.6; }
+
+    /* ===== Toast ===== */
+    .toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 24px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 999;
+      white-space: nowrap;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      animation: toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    .toast.hidden { display: none; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(16px) scale(0.9); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+    }
+
+    /* ===== Bead picker ===== */
+    .bead-picker { position: fixed; z-index: 400; background: #fff; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); width: 260px; padding: 12px; }
+    .bead-picker.hidden { display: none; }
+    .bp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+    .bp-close { border: none; background: none; font-size: 20px; cursor: pointer; color: #999; }
+    .bp-search { width: 100%; padding: 6px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; margin-bottom: 8px; }
+    .bp-colors { display: flex; flex-wrap: wrap; gap: 4px; max-height: 200px; overflow-y: auto; scrollbar-width: none; }
+    .bp-colors::-webkit-scrollbar { display: none; }
+    .bp-swatch { width: 30px; height: 34px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 2px; position: relative; overflow: hidden; }
+    .bp-swatch:hover { transform: scale(1.15); }
+    .bp-swatch.bp-active { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.3); }
+    .bp-swatch-code { font-size: 8px; font-weight: 700; color: #fff; text-shadow: 0 0 3px rgba(0,0,0,0.8), 0 0 1px rgba(0,0,0,0.9); line-height: 1; letter-spacing: 0.5px; }
+    .bp-swatch.bp-light .bp-swatch-code { color: #333; text-shadow: 0 0 3px rgba(255,255,255,0.8), 0 0 1px rgba(255,255,255,0.9); }
+
+    /* ===== Bead tooltip ===== */
+    .bead-tooltip { position: fixed; z-index: 350; background: rgba(0,0,0,0.85); color: #fff; padding: 6px 10px; border-radius: 8px; font-size: 12px; pointer-events: none; }
+    .bead-tooltip.hidden { display: none; }
+    .tip-swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: middle; margin-right: 4px; }
+
+    /* ===== Pixel text panel ===== */
+    .pixel-text-panel { margin-top: 12px; }
+    .pixel-text-panel.hidden { display: none; }
+    .pt-input-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .pt-input { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+    .pt-gen-btn { padding: 8px 16px; border: none; background: #3b82f6; color: #fff; border-radius: 8px; font-size: 14px; cursor: pointer; }
+    .pt-options { display: flex; gap: 12px; margin-bottom: 8px; font-size: 13px; }
+    .pt-options select { padding: 4px 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
+    .pt-preview-area { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 8px; }
+    .pt-preview { background: #f5f5f5; border-radius: 8px; padding: 8px; min-height: 60px; display: flex; align-items: center; justify-content: center; }
+    .pt-info { font-size: 12px; color: #888; }
+    .pt-presets { display: flex; flex-wrap: wrap; gap: 4px; }
+    .pt-preset-label { font-size: 12px; color: #999; width: 100%; margin-bottom: 4px; }
+    .pt-preset { padding: 4px 8px; border: 1px solid #ddd; border-radius: 6px; background: #fff; font-size: 12px; cursor: pointer; }
+    .pt-preset:active { background: #3b82f6; color: #fff; }
+
+    /* ===== Pixel restore modal ===== */
+    .pixel-restore-box { background: #fff; border-radius: 22px; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; padding: 20px; }
+    .pixel-restore-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .pixel-restore-header h2 { font-size: 20px; font-weight: 700; color: #1a1a1a; }
+    .pixel-restore-header p { font-size: 13px; color: #888; margin-top: 4px; }
+    .pixel-restore-toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+    .restore-mode-btn { padding: 6px 14px; border-radius: 16px; border: 1px solid #ddd; background: #fff; font-size: 13px; cursor: pointer; }
+    .restore-mode-btn.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+    .restore-scale-group { font-size: 13px; display: flex; align-items: center; gap: 6px; }
+    .restore-scale-group select { padding: 4px 8px; border: 1px solid #ddd; border-radius: 6px; }
+    .restore-meta { font-size: 12px; color: #888; width: 100%; }
+    .pixel-restore-grid { display: flex; gap: 12px; margin-bottom: 12px; }
+    .pixel-restore-pane { flex: 1; }
+    .pixel-restore-pane h3 { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 6px; }
+    .pixel-restore-stage { background: #f5f5f5; border-radius: 10px; padding: 8px; min-height: 100px; display: flex; align-items: center; justify-content: center; overflow: auto; }
+    .pixel-restore-stage img, .pixel-restore-stage canvas { max-width: 100%; max-height: 200px; image-rendering: pixelated; }
+    .restore-panel-status { font-size: 13px; padding: 8px; border-radius: 8px; }
+    .restore-panel-status.hidden { display: none; }
+    .restore-panel-status-info { background: #eff6ff; color: #1d4ed8; }
+    .restore-panel-status-success { background: #f0fdf4; color: #16a34a; }
+    .restore-panel-status-error { background: #fef2f2; color: #dc2626; }
+    .pixel-restore-actions { display: flex; gap: 8px; }
+
+    /* ===== History ===== */
+    .history-content { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+    .history-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
+    .history-thumb { width: 40px; height: 40px; border-radius: 6px; image-rendering: pixelated; }
+    .history-meta { flex: 1; }
+    .h-size { font-size: 12px; font-weight: 600; color: #333; }
+    .h-date { font-size: 10px; color: #999; }
+    .history-del { border: none; background: none; color: #ccc; font-size: 16px; cursor: pointer; }
+    .history-del:active { color: #dc2626; }
+
+    /* ===== Comparison overlay ===== */
+    .compare-overlay { position: absolute; inset: 0; z-index: 10; opacity: 0.55; pointer-events: none; }
+    .compare-overlay img { width: 100%; height: 100%; object-fit: contain; }
+    .compare-slider-wrap { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.9); padding: 4px 10px; border-radius: 16px; font-size: 12px; pointer-events: auto; }
+
+    /* ===== Edit mode hint ===== */
+    .edit-mode-hint { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 12px; z-index: 20; pointer-events: none; }
+    .canvas-edit-mode { cursor: crosshair !important; }
+
+    /* ===== Fullscreen ===== */
+    .fake-fullscreen { position: fixed !important; inset: 0 !important; z-index: 500 !important; background: #fff !important; border-radius: 0 !important; }
+
+    /* ===== Stats ===== */
+    .stat-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    .stat-value { font-weight: 700; color: #333; }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    .empty-state.hidden { display: none; }
+    .empty-state svg {
+      width: 80%;
+      max-width: 280px;
+      height: auto;
+      opacity: 0.85;
+    }
+    .empty-state-text {
+      color: rgba(255,255,255,0.7);
+      font-size: 14px;
+      font-weight: 500;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="phone-frame">
+  <div class="bg-layer">
+    <div class="bg-blur">
+      <svg class="bg-char" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="hg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#fcd34d"/>
+            <stop offset="100%" style="stop-color:#f59e0b"/>
+          </linearGradient>
+          <linearGradient id="dg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#60a5fa"/>
+            <stop offset="100%" style="stop-color:#3b82f6"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="150" cy="130" rx="65" ry="75" fill="url(#hg)"/>
+        <circle cx="150" cy="115" r="50" fill="#fef3c7"/>
+        <ellipse cx="150" cy="90" rx="42" ry="35" fill="url(#hg)"/>
+        <path d="M108 95 Q115 70 150 65 Q185 70 192 95 Q180 90 150 90 Q120 90 108 95Z" fill="url(#hg)"/>
+        <path d="M120 78 Q135 68 150 78 Q165 68 180 78 Q165 82 150 80 Q135 82 120 78Z" fill="#2563eb"/>
+        <ellipse cx="130" cy="120" rx="12" ry="11" fill="#3b82f6"/>
+        <ellipse cx="170" cy="120" rx="12" ry="11" fill="#3b82f6"/>
+        <circle cx="132" cy="116" r="4" fill="#fff"/>
+        <circle cx="172" cy="116" r="4" fill="#fff"/>
+        <path d="M142 138 Q150 145 158 138" fill="none" stroke="#f87171" stroke-width="3" stroke-linecap="round"/>
+        <ellipse cx="118" cy="130" rx="10" ry="5" fill="#fca5a5" opacity="0.4"/>
+        <ellipse cx="182" cy="130" rx="10" ry="5" fill="#fca5a5" opacity="0.4"/>
+        <path d="M110 158 Q110 152 150 152 Q190 152 190 158 L182 210 Q182 218 150 218 Q118 218 118 210Z" fill="url(#dg)"/>
+        <path d="M105 210 Q150 222 195 210 L190 230 Q150 242 110 230Z" fill="#1d4ed8"/>
+        <path d="M110 162 Q90 175 95 195" fill="none" stroke="#fef3c7" stroke-width="14" stroke-linecap="round"/>
+        <path d="M190 162 Q210 175 205 195" fill="none" stroke="#fef3c7" stroke-width="14" stroke-linecap="round"/>
+        <path d="M78 175 C78 168 92 162 100 175 C108 162 122 168 122 175 C122 188 100 200 100 200 C100 200 78 188 78 175Z" fill="#f472b6" opacity="0.7"/>
+        <rect x="128" y="218" width="20" height="42" rx="10" fill="#e0e7ff"/>
+        <rect x="152" y="218" width="20" height="42" rx="10" fill="#3b82f6"/>
+        <ellipse cx="138" cy="264" rx="14" ry="8" fill="#fbbf24"/>
+        <ellipse cx="162" cy="264" rx="14" ry="8" fill="#fbbf24"/>
+      </svg>
+    </div>
+    <div class="bg-overlay"></div>
+  </div>
+
+  <div class="app-content">
+    <!-- HOME PAGE -->
+    <div id="homePage" class="page active">
+      <div class="home-page">
+        <div class="app-header">
+          <h1 class="app-title">拼豆</h1>
+          <div class="header-actions-group">
+            <button class="mat-btn" id="headerMenuBtn">
+              <svg width="18" height="18" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" id="headerNewCanvasIcon" onclick="event.stopPropagation(); openNewCanvasModal();" style="cursor:pointer;">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M24 24V19L39 4L44 9L29 24H24Z" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 24H9C6.23858 24 4 26.2386 4 29C4 31.7614 6.23858 34 9 34H39C41.7614 34 44 36.2386 44 39C44 41.7614 41.7614 44 39 44H18" stroke="#333" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="headerLayoutIcon" onclick="event.stopPropagation(); toggleLayoutAction();" style="cursor:pointer;">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="12" y1="3" x2="12" y2="21"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="empty-state" id="emptyState">
+          <svg viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M290.016 237.349H127.522a6.089 6.089 0 0 1-6.088-6.089V46.708a6.088 6.088 0 0 1 6.088-6.088h162.494a6.089 6.089 0 0 1 6.089 6.088V194.54" stroke="#143C9B" stroke-width=".762"/>
+            <path d="M258.425 62.31H96.707a6.096 6.096 0 0 0-6.096 6.097V252.18a6.096 6.096 0 0 0 6.096 6.096h161.718a6.096 6.096 0 0 0 6.096-6.096V68.407a6.097 6.097 0 0 0-6.096-6.096Z" fill="#fff" stroke="#143C9B" stroke-width=".762"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M203.038 69.18c6.823 8.71 16.715 14.305 29.676 16.788 4.464.855 4.036-4.375 6.458-6.424 1.252-1.058 5.479-4.274 10.248 1.604 4.77 5.878-2.513 12.244-3.606 13.055-.729.54-2.584.41-5.568-.39l.681 36.61 35.391-.761c-13.866-56.898-28.518-82.633-43.954-77.207a60.5 60.5 0 0 1-3.841 1.218c-12.24 3.4-14.6-11.517-26.59-7.56-11.99 3.956-5.92 22.43-5.92 22.43-2.492 1.652-4.87 7.42-4.194 12.57.45 3.431 2.73 7.657 6.838 12.675l1.663-23.774a1.523 1.523 0 0 1 2.718-.833Z" fill="#143C9B"/>
+            <path d="m208.636 85.492-3.578 5.418 3.189.915M236.256 90.823a8.185 8.185 0 0 0 14.929-4.036 8.185 8.185 0 0 0-14.255-6.038" stroke="#143C9B" stroke-width=".762"/>
+            <path d="M246.991 89.695a5.087 5.087 0 1 0-8.647-5.21" stroke="#143C9B" stroke-width=".762"/>
+            <path d="M243.482 85.882a5.08 5.08 0 0 0-2.095-3.959M210.313 110.098l-1.902 21.433-3.974.418M244.236 94.24l-2.518 36.018 3.089.216" stroke="#143C9B" stroke-width=".762"/>
+            <path d="m226.403 111.445-15.379-1.075c-7.347-.514-12.887-6.886-12.373-14.233l2.218-31.719" stroke="#143C9B" stroke-width=".762"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="m226.43 111.846-16.703 6.73.57-8.257 16.133 1.527Z" fill="#143C9B"/>
+            <path d="M210.739 101.236c1.433-.331 2.366-1.596 2.082-2.825-.284-1.229-1.676-1.957-3.11-1.626-1.434.331-2.366 1.596-2.082 2.825.284 1.229 1.676 1.957 3.11 1.626Z" stroke="#143C9B" stroke-width=".762"/>
+            <path d="M91.941 115.963c17.97 0 32.537-14.566 32.537-32.534 0-17.968-14.567-32.535-32.537-32.535S59.404 65.462 59.404 83.43c0 17.968 14.568 32.534 32.537 32.534Z" fill="#FFC500"/>
+            <path d="M106.344 81.473H77.541v3.556h28.803v-3.556Z" fill="#fff"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M90.164 97.651v-28.8h3.556v28.8h-3.556Z" fill="#fff"/>
+            <path d="M134.372 258.658h208.921V132.829a6.096 6.096 0 0 0-6.096-6.096h-.016l-28.137.075" stroke="#143C9B" stroke-width=".762"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M271.706 129.67c21.042-.012 38.103 17.042 38.108 38.084 0 .003 0 .006-.008.008v38.004l-27.11-.043v31.626H169.833v-34.787l-45.544-.601 37.298-59.724a26.67 26.67 0 0 1 22.621-12.543h7.698c.243-.005.487-.007.731-.008l17.028-.004c2.024 8.095 9.336 14.09 18.047 14.09 8.712 0 16.026-5.998 18.048-14.097l25.946-.005Z" fill="#04D6BA"/>
+            <path d="M170.336 158.201v23.592M283.738 185.979v15.981" stroke="#fff" stroke-width=".762"/>
+            <path d="M308.283 205.766v25.494M144.664 220.367l-46.385-83.191M166.906 182.553 118.333 91.38c-.354-.665-1.359-.822-2.246-.35-.726.386-1.167 1.089-1.076 1.715 1.944 8.05 3.136 13.586 3.575 16.607.513 3.532.389 7.367-.372 11.506" stroke="#143C9B" stroke-width=".762"/>
+            <path clip-rule="evenodd" d="M110.948 114.656a3.42 3.42 0 0 1 2.613-.252 3.42 3.42 0 0 1 2.025 1.67l4.264 8.02c.445.836.508 1.773.252 2.612a3.42 3.42 0 0 1-1.67 2.025l-1.317.701a3.418 3.418 0 0 1-2.612.251 3.415 3.415 0 0 1-2.025-1.669l-4.265-8.021a3.418 3.418 0 0 1-.251-2.612 3.418 3.418 0 0 1 1.669-2.025l1.317-.7Z" stroke="#143C9B" stroke-width=".762"/>
+            <path d="m103.104 118.827-.644.343a3.81 3.81 0 0 0-1.576 5.153l3.907 7.347a3.81 3.81 0 0 0 5.153 1.575l.644-.342a3.81 3.81 0 0 0 1.575-5.153l-3.906-7.347a3.81 3.81 0 0 0-5.153-1.576ZM95.594 122.819l-.644.343a3.81 3.81 0 0 0-1.575 5.153l3.906 7.347a3.81 3.81 0 0 0 5.153 1.576l.644-.343a3.81 3.81 0 0 0 1.576-5.153l-3.907-7.347a3.811 3.811 0 0 0-5.153-1.576Z" stroke="#143C9B" stroke-width=".762"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="m141.059 134.121-24.456-5.19a1.524 1.524 0 0 1-.617-2.696l1.881-1.458a15.992 15.992 0 0 1 10.143-3.349l2.544.055" fill="#fff"/>
+            <path d="m141.059 134.121-24.456-5.19a1.524 1.524 0 0 1-.617-2.696l1.881-1.458a15.992 15.992 0 0 1 10.143-3.349l2.544.055" stroke="#143C9B" stroke-width=".762"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M247.444 182.554H48.549a3.048 3.048 0 0 0-1.928 5.409l86.631 70.732c.272.222.613.343.964.343h209.077l-91.994-75.11a6.092 6.092 0 0 0-3.855-1.374Z" fill="#3370FF"/>
+            <path clip-rule="evenodd" d="M149.573 198.917a1.14 1.14 0 0 0-1.143 1.143c0 .358.168.696.453.912l9.561 7.226c.199.15.441.231.69.231h101.223c.316 0 .601-.128.808-.335a1.143 1.143 0 0 0-.119-1.72l-9.561-7.226a1.14 1.14 0 0 0-.689-.231H149.573Z" stroke="#fff" stroke-width=".762"/>
+            <path d="M183.462 78.292H123.34c-.841 0-1.524.682-1.524 1.524v6.844c0 .842.683 1.525 1.524 1.525h60.122c.842 0 1.524-.683 1.524-1.525v-6.844c0-.842-.682-1.524-1.524-1.524Z" stroke="#143C9B" stroke-width=".762"/>
+            <path clip-rule="evenodd" d="M328.123 204.244c11.319.938 19.421 2.699 24.306 5.282 4.804 2.541 7.407 5.827 7.807 9.858-6.139-3.943-15.882-5.696-29.229-5.257l-2.884-9.883Z" stroke="#143C9B" stroke-width=".762"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M360.235 217.378s1.789 4.773-1.001 10.031c-3.502 6.601-21.374 16.332-62.899 8.626-10.811-2.006-19.019.803-19.019.803l-8.609-15.247c14.948-1.739 30.03.067 45.245 5.416 18.699 6.575 45.594-2.173 46.283-9.629Z" fill="#14C0FF"/>
+          </svg>
+          <p class="empty-state-text">暂无草稿<br>上传图片或新建空白画布开始创作</p>
+        </div>
+        <div class="card-container" id="historyCards"></div>
+      </div>
+    </div>
+
+    <!-- DETAIL PAGE -->
+    <div id="detailPage" class="page">
+      <div class="detail-page active">
+        <div class="detail-header">
+          <button class="back-btn" id="backBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <div class="header-actions">
+            <button class="square-btn" id="exportPngBtn" title="导出 PNG">
+              <svg width="18" height="18" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M44 24C44 22.8954 43.1046 22 42 22C40.8954 22 40 22.8954 40 24H44ZM24 8C25.1046 8 26 7.10457 26 6C26 4.89543 25.1046 4 24 4V8ZM39 40H9V44H39V40ZM8 39V9H4V39H8ZM40 24V39H44V24H40ZM9 8H24V4H9V8ZM9 40C8.44772 40 8 39.5523 8 39H4C4 41.7614 6.23857 44 9 44V40ZM39 44C41.7614 44 44 41.7614 44 39H40C40 39.5523 39.5523 40 39 40V44ZM8 9C8 8.44772 8.44771 8 9 8V4C6.23858 4 4 6.23857 4 9H8Z" fill="currentColor"/>
+                <path d="M6 35L16.6931 25.198C17.4389 24.5143 18.5779 24.4953 19.3461 25.1538L32 36" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M28 31L32.7735 26.2265C33.4772 25.5228 34.5914 25.4436 35.3877 26.0408L42 31" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M32 13L37 18L42 13" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M37 6L37 18" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="menu-btn" id="exportPdfBtn" title="导出 PDF">
+              <svg width="18" height="18" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 4H30L40 14V42C40 43.1046 39.1046 44 38 44H10C8.89543 44 8 43.1046 8 42V6C8 4.89543 8.89543 4 10 4Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M18 18H30V25.9917L18.0083 26L18 18Z" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M18 18V34" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <button class="mat-btn" id="matBtn">
+              <span id="matBtnText">材料清单</span>
+              <svg id="matBtnSvg" width="18" height="18" viewBox="0 0 50 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M42 9H12" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M42 22H12" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M42 34H16" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+
+            <!-- More options dropdown menu -->
+            <div id="matMenu" class="mat-dropdown">
+              <div class="mat-dropdown-item" onclick="toggleMaterialView()">切换视图</div>
+              <div class="mat-dropdown-item" onclick="exportPngAction()">导出 PNG</div>
+              <div class="mat-dropdown-item" onclick="exportPdfAction()">导出 PDF</div>
+              <div class="mat-dropdown-item mat-dropdown-danger" onclick="clearCanvasAction()">清空画布</div>
+            </div>
+          </div>
+        </div>
+        <div class="pattern-wrapper">
+          <canvas id="patternCanvas" class="pattern-canvas"></canvas>
+          <div class="pattern-inner" id="patternInner">
+            <div class="axis-top" id="axisTop"></div>
+            <div class="pattern-body">
+              <div class="axis-left" id="axisLeft"></div>
+              <div class="pattern-grid" id="patternGrid"></div>
+            </div>
+          </div>
+          <div class="material-view" id="materialView">
+            <div class="material-view-content" id="materialViewContent"></div>
+          </div>
+          <div class="pattern-controls" id="patternControls">
+            <button class="pat-ctrl-btn pat-ctrl-reset" id="resetZoomBtn" title="重置缩放">
+              <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+                <path d="M11.2721 36.7279C14.5294 39.9853 19.0294 42 24 42C33.9411 42 42 33.9411 42 24C42 14.0589 33.9411 6 24 6C19.0294 6 14.5294 8.01472 11.2721 11.2721C9.61407 12.9301 6 17 6 17" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M6 9V17H14" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="pat-ctrl-btn pat-ctrl-edit" id="editToggleBtn" title="手动编辑">
+              <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+                <path d="M7 42H43" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M11 26.7199V34H18.3172L39 13.3081L31.6951 6L11 26.7199Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="pat-ctrl-group" id="toggleGroup">
+              <button class="pat-ctrl-btn" id="toggleGridBtn" title="网格线">
+                <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+                  <path d="M39.3 6H8.7C7.20883 6 6 7.20883 6 8.7V39.3C6 40.7912 7.20883 42 8.7 42H39.3C40.7912 42 42 40.7912 42 39.3V8.7C42 7.20883 40.7912 6 39.3 6Z" stroke="currentColor" stroke-width="4"/>
+                  <path d="M24 6L24 42" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <path d="M6 24H42" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <button class="pat-ctrl-btn" id="toggleCodeBtn" title="颜色代码">
+                <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+                  <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="4" fill="none"/>
+                  <path d="M32 16H16" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M24 34V16" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GENERATE PAGE (Tab 1) -->
+    <div id="generatePage" class="page">
+      <div class="gen-page">
+        <h1 class="page-head">
+          <button class="page-back-btn" id="genBackBtn" title="返回画布">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          生成
+        </h1>
+
+        <!-- Upload Card -->
+        <div class="menu-card" id="uploadCard">
+          <div class="menu-card-icon" style="background:rgba(59,130,246,0.12);">📷</div>
+          <div class="menu-card-info">
+            <div class="menu-card-name">上传图片</div>
+            <div class="menu-card-desc">JPG / PNG，拖拽或点击上传</div>
+          </div>
+        </div>
+        <div class="mc-upload-area" id="genDropZone">
+          <p>📦 点击选择图片<br><small>支持 JPG / PNG</small></p>
+          <input type="file" id="genFileInput" accept="image/*" hidden>
+        </div>
+        <div class="mc-preview" id="genPreview" style="display:none;">
+          <img id="genPreviewImg" alt="预览">
+        </div>
+
+        <!-- Gallery Card -->
+        <div class="menu-card" id="galleryCard" onclick="openGallery()">
+          <div class="menu-card-icon" style="background:rgba(168,85,247,0.12);">🖼️</div>
+          <div class="menu-card-info">
+            <div class="menu-card-name">素材图库</div>
+            <div class="menu-card-desc">点击选择素材，一键生成拼豆图案</div>
+          </div>
+        </div>
+
+        <!-- Pixel Text Card -->
+        <div class="menu-card" id="pixelTextCard" onclick="openPixelTextFromGenerate()">
+          <div class="menu-card-icon" style="background:rgba(34,197,94,0.12);">✒️</div>
+          <div class="menu-card-info">
+            <div class="menu-card-name">像素文字</div>
+            <div class="menu-card-desc">创建文字图案，支持多种字体</div>
+          </div>
+        </div>
+
+        <!-- Pixel Restore Card -->
+        <div class="menu-card" id="pixelRestoreCard" onclick="openPixelRestore()">
+          <div class="menu-card-icon" style="background:rgba(245,158,11,0.12);">🪄</div>
+          <div class="menu-card-info">
+            <div class="menu-card-name">像素还原</div>
+            <div class="menu-card-desc">上传像素作品，还原为拼豆图案</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PAGE (Tab 2) -->
+    <div id="settingsPage" class="page">
+      <div class="settings-page">
+        <h1 class="page-head">
+          <button class="page-back-btn" id="settingsBackBtn" title="返回画布">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          设置
+        </h1>
+
+        <!-- Pattern Parameters -->
+        <div class="gen-card">
+          <div class="gen-card-title">
+            <span class="gc-icon" style="background:rgba(59,130,246,0.12);">📐</span>
+            图案参数
+          </div>
+          <div class="mc-slider-group">
+            <label>珠子品牌</label>
+            <select id="brandSelect" class="mc-select">
+              <option value="mard" selected>MARD 拼豆</option>
+              <option value="perler">Perler Beads</option>
+              <option value="hama">Hama Beads</option>
+            </select>
+          </div>
+          <div class="mc-slider-group">
+            <label>宽度（珠子数）: <span id="widthValue">50</span></label>
+            <input type="range" id="widthSlider" min="10" max="1000" value="50">
+          </div>
+          <div class="mc-slider-group">
+            <label>高度（珠子数）: <span id="heightValue">--</span></label>
+            <small>根据图片比例自动计算</small>
+          </div>
+          <div class="mc-slider-group">
+            <label>最大颜色数: <span id="maxColorsValue">不限</span></label>
+            <input type="range" id="maxColorsSlider" min="0" max="249" value="0">
+            <small>0 = 不限制，当前品牌共 <span id="paletteTotal">249</span> 色</small>
+          </div>
+        </div>
+
+        <!-- Image Adjustments -->
+        <div class="gen-card">
+          <div class="gen-card-title">
+            <span class="gc-icon" style="background:rgba(251,191,36,0.12);">🎨</span>
+            图片调整
+          </div>
+          <div class="mc-slider-group">
+            <label>亮度: <span id="brightnessValue">0</span></label>
+            <input type="range" id="brightnessSlider" min="-100" max="100" value="0">
+          </div>
+          <div class="mc-slider-group">
+            <label>对比度: <span id="contrastValue">0</span></label>
+            <input type="range" id="contrastSlider" min="-100" max="100" value="0">
+          </div>
+          <div class="mc-slider-group">
+            <label>饱和度: <span id="saturationValue">0</span></label>
+            <input type="range" id="saturationSlider" min="-100" max="100" value="0">
+          </div>
+        </div>
+
+        <!-- Display Options -->
+        <div class="gen-card">
+          <div class="gen-card-title">
+            <span class="gc-icon" style="background:rgba(99,102,241,0.12);">👁️</span>
+            显示选项
+          </div>
+          <div class="mc-check-row"><label><input type="checkbox" id="showCodes" checked> 显示颜色代码</label></div>
+          <div class="mc-check-row"><label><input type="checkbox" id="showGrid" checked> 显示网格线</label></div>
+          <div class="mc-check-row"><label><input type="checkbox" id="showBoardLines"> 显示拼豆板分割线 (29×29)</label></div>
+          <div class="mc-check-row"><label><input type="checkbox" id="hideBg"> 隐藏背景色</label></div>
+          <div class="mc-check-row"><label><input type="checkbox" id="editMode"> ✏️ 手动编辑模式</label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM BAR -->
+    <div class="bottom-bar">
+      <div class="tab-capsule">
+        <div class="tab-slider" id="tabSlider"></div>
+        <button class="tab-item active" onclick="switchTab(this, 0)">
+          <svg class="tab-icon-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M24 44C29.5229 44 34.5229 41.7613 38.1422 38.1422C41.7613 34.5229 44 29.5229 44 24C44 18.4772 41.7613 13.4772 38.1422 9.85787C34.5229 6.23858 29.5229 4 24 4C18.4772 4 13.4772 6.23858 9.85787 9.85787C6.23858 13.4772 4 18.4772 4 24C4 29.5229 6.23858 34.5229 9.85787 38.1422C13.4772 41.7613 18.4772 44 24 44Z" fill="currentColor" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <path d="M24 38C27.866 38 31.366 36.4329 33.8996 33.8996C36.4329 31.366 38 27.866 38 24" stroke="white" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+          <span class="tab-label">首页</span>
+        </button>
+        <button class="tab-item" onclick="switchTab(this, 1)">
+          <svg class="tab-icon-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:18px;height:18px">
+            <path d="M18 6H8C6.89543 6 6 6.89543 6 8V18C6 19.1046 6.89543 20 8 20H18C19.1046 20 20 19.1046 20 18V8C20 6.89543 19.1046 6 18 6Z" fill="currentColor" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+            <path d="M18 28H8C6.89543 28 6 28.8954 6 30V40C6 41.1046 6.89543 42 8 42H18C19.1046 42 20 41.1046 20 40V30C20 28.8954 19.1046 28 18 28Z" fill="currentColor" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+            <path d="M35 20C38.866 20 42 16.866 42 13C42 9.13401 38.866 6 35 6C31.134 6 28 9.13401 28 13C28 16.866 31.134 20 35 20Z" fill="currentColor" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+            <path d="M40 28H30C28.8954 28 28 28.8954 28 30V40C28 41.1046 28.8954 42 30 42H40C41.1046 42 42 41.1046 42 40V30C42 28.8954 41.1046 28 40 28Z" fill="currentColor" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+          </svg>
+          <span class="tab-label">生成</span>
+        </button>
+        <button class="tab-item" onclick="switchTab(this, 2)">
+          <svg class="tab-icon-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M18.2838 43.1713C14.9327 42.1736 11.9498 40.3213 9.58787 37.867C10.469 36.8227 11 35.4734 11 34.0001C11 30.6864 8.31371 28.0001 5 28.0001C4.79955 28.0001 4.60139 28.01 4.40599 28.0292C4.13979 26.7277 4 25.3803 4 24.0001C4 21.9095 4.32077 19.8938 4.91579 17.9995C4.94381 17.9999 4.97188 18.0001 5 18.0001C8.31371 18.0001 11 15.3138 11 12.0001C11 11.0488 10.7786 10.1493 10.3846 9.35011C12.6975 7.1995 15.5205 5.59002 18.6521 4.72314C19.6444 6.66819 21.6667 8.00013 24 8.00013C26.3333 8.00013 28.3556 6.66819 29.3479 4.72314C32.4795 5.59002 35.3025 7.1995 37.6154 9.35011C37.2214 10.1493 37 11.0488 37 12.0001C37 15.3138 39.6863 18.0001 43 18.0001C43.0281 18.0001 43.0562 17.9999 43.0842 17.9995C43.6792 19.8938 44 21.9095 44 24.0001C44 25.3803 43.8602 26.7277 43.594 28.0292C43.3986 28.01 43.2005 28.0001 43 28.0001C39.6863 28.0001 37 30.6864 37 34.0001C37 35.4734 37.531 36.8227 38.4121 37.867C36.0502 40.3213 33.0673 42.1736 29.7162 43.1713C28.9428 40.752 26.676 39.0001 24 39.0001C21.324 39.0001 19.0572 40.752 18.2838 43.1713Z" fill="currentColor" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+            <path d="M24 31C27.866 31 31 27.866 31 24C31 20.134 27.866 17 24 17C20.134 17 17 20.134 17 24C17 27.866 20.134 31 24 31Z" fill="#fff" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+          </svg>
+          <span class="tab-label">设置</span>
+        </button>
+      </div>
+      <button class="tab-fab" id="fabUpload" title="上传图片/打开图库">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:24px;height:24px">
+          <path d="M44 24C44 22.8954 43.1046 22 42 22C40.8954 22 40 22.8954 40 24H44ZM24 8C25.1046 8 26 7.10457 26 6C26 4.89543 25.1046 4 24 4V8ZM39 40H9V44H39V40ZM8 39V9H4V39H8ZM40 24V39H44V24H40ZM9 8H24V4H9V8ZM9 40C8.44772 40 8 39.5523 8 39H4C4 41.7614 6.23857 44 9 44V40ZM39 44C41.7614 44 44 41.7614 44 39H40C40 39.5523 39.5523 40 39 40V44ZM8 9C8 8.44772 8.44771 8 9 8V4C6.23858 4 4 6.23857 4 9H8Z" fill="#6b7280"/>
+          <path d="M6 35L16.6931 25.198C17.4389 24.5143 18.5779 24.4953 19.3461 25.1538L32 36" stroke="#6b7280" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M28 31L32.7735 26.2265C33.4772 25.5228 34.5914 25.4436 35.3877 26.0408L42 31" stroke="#6b7280" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M37 18L37 6" stroke="#6b7280" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M32 11L37 6L42 11" stroke="#6b7280" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- MATERIAL PANEL -->
+  <div class="material-overlay" id="materialOverlay" onclick="toggleMaterial()"></div>
+  <div class="material-panel" id="materialPanel">
+    <div class="panel-header">
+      <span class="panel-title">材料清单</span>
+      <button class="panel-close" onclick="toggleMaterial()">×</button>
+    </div>
+    <div class="panel-content" id="materialList"></div>
+  </div>
+</div>
+
+<!-- New Canvas Modal -->
+<div id="newCanvasModal" class="canvas-modal hidden">
+  <div class="new-canvas-box">
+    <button class="modal-close" id="newCanvasClose">&times;</button>
+    <div class="new-canvas-header">
+      <h2>📐 新建空白画布</h2>
+    </div>
+    <div class="form-group">
+      <label>画布尺寸（宽 × 高）</label>
+      <div class="form-input-row">
+        <input type="number" id="canvasWidth" class="form-input" placeholder="宽" value="50" min="10" max="1000">
+        <span class="form-divider">×</span>
+        <input type="number" id="canvasHeight" class="form-input" placeholder="高" value="50" min="10" max="1000">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="form-btn form-btn-cancel" id="newCanvasCancel">取消</button>
+      <button class="form-btn form-btn-primary" id="newCanvasConfirm">创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div id="confirmModal" class="confirm-modal hidden">
+  <div class="confirm-box">
+    <h3>⚠️ 确认删除</h3>
+    <p id="confirmMessage">确定要删除这个草稿吗？此操作不可恢复。</p>
+    <div class="confirm-actions">
+      <button class="confirm-btn confirm-btn-cancel" id="confirmCancelBtn">取消</button>
+      <button class="confirm-btn confirm-btn-danger" id="confirmDeleteBtn">删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- Gallery Modal -->
+<div id="galleryModal" class="modal-overlay hidden">
+  <div class="gallery-box">
+    <div class="gallery-header">
+      <h2>🖼️ 素材图库</h2>
+      <p class="gallery-sub">点击选择素材，一键生成拼豆图案</p>
+      <button class="modal-close" id="galleryClose">&times;</button>
+    </div>
+    <div class="gallery-mode-switch">
+      <button class="gallery-mode-btn active" data-mode="sbti">🧠 SBTI</button>
+      <button class="gallery-mode-btn" data-mode="emoji">🎨 表情素材</button>
+      <button class="gallery-mode-btn" data-mode="pattern">🧩 拼豆图案</button>
+      <button class="gallery-mode-btn" data-mode="famous-ip">🌟 动漫IP</button>
+      <button class="gallery-mode-btn" data-mode="text">✒️ 像素文字</button>
+    </div>
+    <div class="gallery-tabs" id="galleryTabs"></div>
+    <div class="gallery-grid" id="galleryGrid"></div>
+    <div id="pixelTextPanel" class="pixel-text-panel hidden">
+      <div class="pt-input-row">
+        <input type="text" id="ptInput" class="pt-input" placeholder="输入文字，如：对 不对 666 ❤" maxlength="10">
+        <button id="ptGenBtn" class="btn btn-primary pt-gen-btn">生成图案</button>
+      </div>
+      <div class="pt-options">
+        <label>字号：<select id="ptSize"><option value="12">12px 迷你</option><option value="16" selected>16px 小</option><option value="20">20px 中</option><option value="24">24px 大</option><option value="32">32px 特大</option></select></label>
+        <label>前景：<select id="ptFg"><option value="H23">纯黑 H23</option><option value="F10">正红 F10</option><option value="C6">蓝 C6</option><option value="B4">鲜绿 B4</option><option value="D5">紫 D5</option><option value="A4">鲜黄 A4</option><option value="A11">鲜橙 A11</option></select></label>
+        <label>背景：<select id="ptBg"><option value=".">透明(无)</option><option value="H19">纯白 H19</option><option value="A2">淡柠檬 A2</option></select></label>
+      </div>
+      <div class="pt-preview-area">
+        <div id="ptPreview" class="pt-preview"></div>
+        <div id="ptInfo" class="pt-info"></div>
+      </div>
+      <div class="pt-presets">
+        <span class="pt-preset-label">热门文字：</span>
+        <button class="pt-preset" data-text="对">对</button>
+        <button class="pt-preset" data-text="不">不</button>
+        <button class="pt-preset" data-text="666">666</button>
+        <button class="pt-preset" data-text="❤">❤</button>
+        <button class="pt-preset" data-text="OK">OK</button>
+        <button class="pt-preset" data-text="No">No</button>
+        <button class="pt-preset" data-text="哈">哈</button>
+        <button class="pt-preset" data-text="了">了</button>
+        <button class="pt-preset" data-text="烦">烦</button>
+        <button class="pt-preset" data-text="Hi">Hi</button>
+        <button class="pt-preset" data-text="GG">GG</button>
+        <button class="pt-preset" data-text="?">?</button>
+        <button class="pt-preset" data-text="!">!</button>
+        <button class="pt-preset" data-text="爱">爱</button>
+        <button class="pt-preset" data-text="墨">墨</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pixel Restore Modal -->
+<div id="pixelRestoreModal" class="modal-overlay hidden">
+  <div class="pixel-restore-box">
+    <div class="pixel-restore-header">
+      <div>
+        <h2>🪄 像素图还原</h2>
+        <p>纯前端本地处理，不上传图片。先提取格子颜色，再输出像素底图或平滑插画。</p>
+      </div>
+      <button class="modal-close" id="pixelRestoreClose">&times;</button>
+    </div>
+    <div class="pixel-restore-toolbar">
+      <div class="restore-mode-group" aria-label="还原模式">
+        <button type="button" class="restore-mode-btn active" data-restore-mode="sharp">像素底图</button>
+        <button type="button" class="restore-mode-btn" data-restore-mode="smooth">平滑插画</button>
+      </div>
+      <label class="restore-scale-group" for="restoreScale">
+        输出倍率
+        <select id="restoreScale">
+          <option value="2">2x</option>
+          <option value="4" selected>4x</option>
+          <option value="8">8x</option>
+        </select>
+      </label>
+      <div id="restoreMeta" class="restore-meta"></div>
+    </div>
+    <div class="pixel-restore-grid">
+      <section class="pixel-restore-pane">
+        <h3>原图</h3>
+        <div class="pixel-restore-stage">
+          <img id="restoreOriginalImg" alt="原图预览">
+        </div>
+      </section>
+      <section class="pixel-restore-pane">
+        <h3>还原结果</h3>
+        <div class="pixel-restore-stage">
+          <canvas id="restoreResultCanvas"></canvas>
+        </div>
+      </section>
+    </div>
+    <p id="restorePanelStatus" class="restore-panel-status hidden"></p>
+    <div class="pixel-restore-actions">
+      <button id="restoreApplyBtn" style="flex:1;padding:12px;border:none;background:#3b82f6;color:#fff;font-size:14px;font-weight:600;border-radius:10px;cursor:pointer;">应用结果到主图</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bead tooltip -->
+<div id="beadTooltip" class="bead-tooltip hidden"></div>
+
+<!-- Bead color picker -->
+<div id="beadPicker" class="bead-picker hidden">
+  <div class="bp-header">
+    <span id="bpTitle">选择颜色</span>
+    <button id="bpClose" class="bp-close">&times;</button>
+  </div>
+  <input type="text" id="bpSearch" class="bp-search" placeholder="搜索色号或名称…">
+  <div id="bpColors" class="bp-colors"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast hidden"></div>
+
+<!-- External dependencies -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="js/gallery-patterns.js?v=20260416a"></script>
+<script src="js/pixel-text.js?v=20260323b"></script>
+<script src="js/pixel-restore.js?v=20260410c"></script>
+<script src="js/colors.js?v=20260323b"></script>
+<script src="js/converter.js?v=20260410p"></script>
+
+<script>
+/* ═══════════ Mobile Bead Pattern App ═══════════ */
+const converter = new BeadConverter();
+const canvas = document.getElementById('patternCanvas');
+const ctx = canvas.getContext('2d');
+
+let image = null;
+let croppedImage = null;
+let pattern = null;
+let bgCode = null;
+let zoom = 1, panX = 0, panY = 0;
+let currentRotation = 0;
+let brightness = 0, contrast = 0, saturation = 0;
+let editMode = false;
+let editTarget = null;
+let hasEdited = false;
+let hasAdjustedZoom = false;
+let currentDraftIdx = -1;
+
+const CELL = 18, AXIS_M = 22;
+
+/* ── Toast ── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  setTimeout(() => t.classList.add('hidden'), 2500);
+}
+
+/* ── Tab switching ── */
+function switchTab(el, index) {
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const slider = document.getElementById('tabSlider');
+  const step = 76;
+  slider.style.transform = 'translateX(' + (index * step) + 'px)';
+  document.querySelectorAll('#homePage, #generatePage, #settingsPage, #detailPage').forEach(p => p.classList.remove('active'));
+  if (index === 0) {
+    if (hasEdited && pattern) {
+      saveEditedPattern();
+      hasEdited = false;
+    }
+    document.getElementById('homePage').classList.add('active');
+  }
+  else if (index === 1) document.getElementById('generatePage').classList.add('active');
+  else document.getElementById('settingsPage').classList.add('active');
+}
+
+/* ── Back buttons for generate/settings pages ── */
+document.getElementById('genBackBtn').addEventListener('click', () => {
+  document.getElementById('generatePage').classList.remove('active');
+  document.getElementById('detailPage').classList.add('active');
+});
+
+document.getElementById('settingsBackBtn').addEventListener('click', () => {
+  document.getElementById('settingsPage').classList.remove('active');
+  document.getElementById('detailPage').classList.add('active');
+});
+
+/* ── Staggered animation engine ── */
+function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+function easeInCubic(t) { return t * t * t; }
+
+function animateProp(el, from, to, duration, delay, onUpdate) {
+  setTimeout(() => {
+    const start = performance.now();
+    function frame(now) {
+      let t = Math.min((now - start) / duration, 1);
+      onUpdate(from + (to - from) * easeOutCubic(t), t);
+      if (t < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }, delay);
+}
+
+function morphStagger(card, flyer, target, forward) {
+  const cardRect = card.getBoundingClientRect();
+  const targetRect = target.getBoundingClientRect();
+  
+  if (forward) {
+    // Card morphs first (0ms), header follows (80ms), pattern enters last (160ms)
+    const header = document.querySelector('.detail-header');
+    const patWrap = document.querySelector('.pattern-wrapper');
+    
+    header.style.opacity = '0';
+    header.style.transform = 'translateY(-20px)';
+    patWrap.style.opacity = '0';
+    patWrap.style.transform = 'translateY(40px) scale(0.9)';
+    
+    // Phase 1: card morphs to position (0-500ms)
+    animateProp(flyer, cardRect.left, targetRect.left, 500, 0, (v) => { flyer.style.left = v + 'px'; });
+    animateProp(flyer, cardRect.top, targetRect.top, 500, 0, (v) => { flyer.style.top = v + 'px'; });
+    animateProp(flyer, cardRect.width, targetRect.width, 500, 0, (v) => { flyer.style.width = v + 'px'; });
+    animateProp(flyer, cardRect.height, targetRect.height, 500, 0, (v) => { flyer.style.height = v + 'px'; });
+    
+    // Phase 2: header slides in (80-480ms)
+    animateProp(header, 0, 1, 400, 80, (v) => { header.style.opacity = v; });
+    animateProp(header, -20, 0, 400, 80, (v) => { header.style.transform = 'translateY(' + v + 'px)'; });
+    
+    // Phase 3: pattern enters (160-560ms)
+    animateProp(patWrap, 0, 1, 400, 160, (v) => { patWrap.style.opacity = v; });
+    animateProp(patWrap, 40, 0, 400, 160, (v) => { patWrap.style.transform = 'translateY(' + v + 'px) scale(0.9 + 0.1 * v / 40)'; });
+    
+    return 600;
+  } else {
+    const header = document.querySelector('.detail-header');
+    const patWrap = document.querySelector('.pattern-wrapper');
+    
+    // Phase 1: pattern exits first (0-300ms)
+    animateProp(patWrap, 1, 0, 300, 0, (v) => { patWrap.style.opacity = v; });
+    animateProp(patWrap, 0, 40, 300, 0, (v) => { patWrap.style.transform = 'translateY(' + v + 'px) scale(' + (1 - 0.1 * v / 40) + ')'; });
+    
+    // Phase 2: header fades out (60-360ms)
+    animateProp(header, 1, 0, 300, 60, (v) => { header.style.opacity = v; });
+    animateProp(header, 0, -20, 300, 60, (v) => { header.style.transform = 'translateY(' + v + 'px)'; });
+    
+    // Phase 3: card morphs back (120-520ms)
+    animateProp(flyer, targetRect.left, cardRect.left, 400, 120, (v) => { flyer.style.left = v + 'px'; });
+    animateProp(flyer, targetRect.top, cardRect.top, 400, 120, (v) => { flyer.style.top = v + 'px'; });
+    animateProp(flyer, targetRect.width, cardRect.width, 400, 120, (v) => { flyer.style.width = v + 'px'; });
+    animateProp(flyer, targetRect.height, cardRect.height, 400, 120, (v) => { flyer.style.height = v + 'px'; });
+    
+    return 550;
+  }
+}
+
+/* ── Page navigation ── */
+document.getElementById('backBtn').addEventListener('click', showHome);
+
+/* ── Material button click/dropdown ── */
+document.getElementById('matBtn').addEventListener('click', (e) => {
+  if (e.target.closest('#matBtnText')) {
+    toggleMaterial();
+    closeMatMenu();
+  } else {
+    e.stopPropagation();
+    toggleMatMenu();
+  }
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#matMenu') && !e.target.closest('#matBtn')) {
+    closeMatMenu();
+  }
+});
+
+function toggleMatMenu() {
+  const menu = document.getElementById('matMenu');
+  const btn = document.getElementById('matBtn');
+  const pw = document.querySelector('.pattern-wrapper');
+  if (menu.classList.contains('show')) {
+    menu.classList.remove('show');
+  } else {
+    const rect = btn.getBoundingClientRect();
+    const pwTop = pw ? pw.getBoundingClientRect().top : rect.bottom + 8;
+    menu.style.top = pwTop + 'px';
+    menu.style.right = (window.innerWidth - rect.right) + 'px';
+    menu.style.left = 'auto';
+    menu.classList.add('show');
+  }
+}
+
+function closeMatMenu() {
+  document.getElementById('matMenu').classList.remove('show');
+}
+
+function toggleMaterialView() {
+  toggleMaterial();
+  closeMatMenu();
+}
+
+function exportPngAction() {
+  document.getElementById('exportPngBtn').click();
+  closeMatMenu();
+}
+
+function exportPdfAction() {
+  document.getElementById('exportPdfBtn').click();
+  closeMatMenu();
+}
+
+function clearCanvasAction() {
+  if (!confirm('确定要清空当前画布吗？此操作不可恢复。')) return;
+  pattern = null;
+  image = null;
+  croppedImage = null;
+  bgCode = null;
+  hasEdited = false;
+  currentDraftIdx = -1;
+  document.getElementById('patternCanvas').style.display = 'none';
+  document.getElementById('patternInner').style.display = 'block';
+  generateStaticPattern();
+  updateMaterialList();
+  closeMatMenu();
+  showToast('画布已清空');
+}
+
+function showHome() {
+  if (materialViewMode) { toggleMaterial(); }
+  if (hasEdited && pattern) {
+    saveEditedPattern();
+    hasEdited = false;
+  }
+  const detailPage = document.getElementById('detailPage');
+  const homePage = document.getElementById('homePage');
+  detailPage.classList.add('exit-right');
+  setTimeout(() => {
+    detailPage.classList.remove('active', 'exit-right');
+    homePage.classList.add('active');
+    homePage.classList.add('enter-up');
+    setTimeout(() => homePage.classList.remove('enter-up'), 350);
+  }, 300);
+}
+
+function showDetail() {
+  const detailPage = document.getElementById('detailPage');
+  const homePage = document.getElementById('homePage');
+  homePage.classList.add('exit-down');
+  setTimeout(() => {
+    homePage.classList.remove('active', 'exit-down');
+    detailPage.classList.add('active');
+    detailPage.classList.add('enter-left');
+    setTimeout(() => detailPage.classList.remove('enter-left'), 350);
+    if (pattern) { fitAndDraw(); } else { generateStaticPattern(); }
+  }, 300);
+}
+
+/* ── Material panel ── */
+let materialViewMode = false;
+
+function toggleMaterial() {
+  const canvas = document.getElementById('patternCanvas');
+  const inner = document.getElementById('patternInner');
+  const matView = document.getElementById('materialView');
+  const btnText = document.getElementById('matBtnText');
+  materialViewMode = !materialViewMode;
+  if (materialViewMode) {
+    canvas.style.display = 'none';
+    inner.style.display = 'none';
+    matView.classList.add('show');
+    btnText.textContent = '拼豆视图';
+    renderMaterialView();
+  } else {
+    canvas.style.display = pattern ? 'block' : 'none';
+    inner.style.display = pattern ? 'none' : 'block';
+    matView.classList.remove('show');
+    btnText.textContent = '材料清单';
+  }
+}
+
+function renderMaterialView() {
+  const content = document.getElementById('materialViewContent');
+  if (!pattern) {
+    content.innerHTML = '<p style="text-align:center;color:#999;padding:40px 0;">暂无数据，请先生成图案</p>';
+    return;
+  }
+  const brand = document.getElementById('brandSelect').value;
+  const palette = BEAD_PALETTES[brand].colors;
+  const entries = Object.entries(pattern.colorCounts).map(([code, count]) => {
+    const c = palette.find(p => p.code === code);
+    return { code, count, color: c, group: code.charAt(0) };
+  });
+  entries.sort((a, b) => a.group.localeCompare(b.group) || a.code.localeCompare(b.code, undefined, { numeric: true }));
+  const groups = {};
+  entries.forEach(e => {
+    if (!e.color) return;
+    if (!groups[e.group]) groups[e.group] = [];
+    groups[e.group].push(e);
+  });
+  let html = '';
+  Object.keys(groups).sort().forEach(g => {
+    html += '<div class="mv-group"><div class="mv-group-title">' + g + ' 系列</div>';
+    groups[g].forEach(e => {
+      html += '<label class="material-view-item"><input type="checkbox"><div class="mv-swatch" style="background:' + e.color.hex + '"></div><div class="mv-details"><div class="mv-name">' + e.color.code + ' ' + e.color.name + '</div><div class="mv-qty">' + e.count + ' 颗</div></div></label>';
+    });
+    html += '</div>';
+  });
+  content.innerHTML = html;
+}
+
+function updateMaterialList() {
+  const materialList = document.getElementById('materialList');
+  if (!pattern) {
+    materialList.innerHTML = '<p style="font-size:13px;color:#999;text-align:center;padding:20px;">暂无数据，请先生成图案</p>';
+    return;
+  }
+  const brand = document.getElementById('brandSelect').value;
+  const palette = BEAD_PALETTES[brand].colors;
+  const sorted = Object.entries(pattern.colorCounts).sort((a, b) => b[1] - a[1]);
+  materialList.innerHTML = sorted.map(([code, count]) => {
+    const c = palette.find(p => p.code === code);
+    if (!c) return '';
+    return '<div class="material-item"><div class="material-swatch" style="background:' + c.hex + '"></div><div class="material-details"><div class="material-name">' + c.code + ' ' + c.name + '</div><div class="material-qty">' + count + ' 颗</div></div></div>';
+  }).join('');
+}
+
+/* ── Static demo pattern (fallback) ── */
+function generateStaticPattern() {
+  const grid = document.getElementById('patternGrid');
+  const axisTop = document.getElementById('axisTop');
+  const axisLeft = document.getElementById('axisLeft');
+  grid.innerHTML = ''; axisTop.innerHTML = ''; axisLeft.innerHTML = '';
+  const size = 10;
+  for (let i = 1; i <= size; i++) {
+    const num = document.createElement('span'); num.textContent = i; axisTop.appendChild(num);
+    const num2 = document.createElement('span'); num2.textContent = i; axisLeft.appendChild(num2);
+  }
+  const colors = ['#fbbf24','#f59e0b','#fef3c7','#3b82f6','#60a5fa','#2563eb','#e0e7ff','#f472b6','#1a1a1a','#ffffff','#f87171','#fca5a5'];
+  const staticPattern = [
+    [9,9,9,5,5,5,9,9,9,9],[9,9,5,5,2,5,5,9,9,9],[9,5,5,3,3,3,5,5,9,9],
+    [5,5,8,3,4,3,8,5,5,9],[5,8,6,2,2,2,6,8,5,9],[9,5,3,3,10,3,3,5,9,9],
+    [9,9,5,5,3,5,5,9,9,9],[9,9,9,5,1,5,9,9,9,9],[9,9,5,3,6,3,5,9,9,9],[9,5,5,9,9,9,5,5,9,9],
+  ];
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const cell = document.createElement('div');
+      cell.className = 'pattern-cell';
+      cell.style.backgroundColor = colors[staticPattern[y][x]] || '#fff';
+      grid.appendChild(cell);
+    }
+  }
+  updateMaterialList();
+}
+
+/* ── Canvas rendering ── */
+function fitAndDraw() {
+  if (!pattern) return;
+  const wrapper = document.querySelector('.pattern-wrapper');
+  canvas.width = wrapper.clientWidth;
+  canvas.height = wrapper.clientHeight;
+  canvas.style.display = 'block';
+  document.getElementById('patternInner').style.display = 'none';
+
+  const pw = pattern.width * CELL + AXIS_M * 2;
+  const ph = pattern.height * CELL + AXIS_M * 2;
+  zoom = Math.min(canvas.width / pw, canvas.height / ph, 1);
+  panX = (canvas.width - pw * zoom) / 2;
+  panY = (canvas.height - ph * zoom) / 2;
+  drawPattern();
+  updateMaterialList();
+  showToast('图案已生成！');
+}
+
+function drawPattern() {
+  if (!pattern) return;
+  const { grid, width: W, height: H } = pattern;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(panX, panY);
+  ctx.scale(zoom, zoom);
+  if (currentRotation) {
+    ctx.translate(W * CELL / 2 + AXIS_M, H * CELL / 2 + AXIS_M);
+    ctx.rotate(currentRotation);
+    ctx.translate(-(W * CELL / 2 + AXIS_M), -(H * CELL / 2 + AXIS_M));
+  }
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(AXIS_M, AXIS_M, W * CELL, H * CELL);
+
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const c = grid[y][x];
+      if (!c) continue;
+      if (document.getElementById('hideBg').checked && bgCode && c.code === bgCode) continue;
+      ctx.fillStyle = c.hex;
+      ctx.fillRect(AXIS_M + x * CELL, AXIS_M + y * CELL, CELL, CELL);
+    }
+  }
+
+  const showGrid = document.getElementById('showGrid').checked;
+  if (showGrid) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x <= W; x++) {
+      ctx.beginPath(); ctx.moveTo(AXIS_M + x * CELL, AXIS_M); ctx.lineTo(AXIS_M + x * CELL, AXIS_M + H * CELL); ctx.stroke();
+    }
+    for (let y = 0; y <= H; y++) {
+      ctx.beginPath(); ctx.moveTo(AXIS_M, AXIS_M + y * CELL); ctx.lineTo(AXIS_M + W * CELL, AXIS_M + y * CELL); ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 1.2;
+    for (let x = 5; x <= W; x += 5) {
+      ctx.beginPath(); ctx.moveTo(AXIS_M + x * CELL, AXIS_M); ctx.lineTo(AXIS_M + x * CELL, AXIS_M + H * CELL); ctx.stroke();
+    }
+    for (let y = 5; y <= H; y += 5) {
+      ctx.beginPath(); ctx.moveTo(AXIS_M, AXIS_M + y * CELL); ctx.lineTo(AXIS_M + W * CELL, AXIS_M + y * CELL); ctx.stroke();
+    }
+  }
+
+  const showCodes = document.getElementById('showCodes').checked;
+  if (showCodes && zoom >= 0.35) {
+    const fs = Math.min(9, CELL * 0.42);
+    ctx.font = 'bold ' + fs + 'px -apple-system, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const c = grid[y][x];
+        if (!c) continue;
+        if (document.getElementById('hideBg').checked && bgCode && c.code === bgCode) continue;
+        const br = (c.rgb.r * 299 + c.rgb.g * 587 + c.rgb.b * 114) / 1000;
+        ctx.fillStyle = br > 140 ? '#000' : '#FFF';
+        ctx.fillText(c.code, AXIS_M + x * CELL + CELL / 2, AXIS_M + y * CELL + CELL / 2);
+      }
+    }
+  }
+
+  ctx.fillStyle = '#555'; ctx.font = '9px -apple-system, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+  for (let x = 0; x < W; x++) ctx.fillText(x + 1, AXIS_M + x * CELL + CELL / 2, AXIS_M - 3);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (let x = 0; x < W; x++) ctx.fillText(x + 1, AXIS_M + x * CELL + CELL / 2, AXIS_M + H * CELL + 3);
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for (let y = 0; y < H; y++) ctx.fillText(y + 1, AXIS_M - 4, AXIS_M + y * CELL + CELL / 2);
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  for (let y = 0; y < H; y++) ctx.fillText(y + 1, AXIS_M + W * CELL + 4, AXIS_M + y * CELL + CELL / 2);
+
+  if (document.getElementById('showBoardLines').checked) {
+    ctx.strokeStyle = '#e53935'; ctx.lineWidth = 2; ctx.setLineDash([6, 3]);
+    for (let bx = 29; bx < W; bx += 29) {
+      ctx.beginPath(); ctx.moveTo(AXIS_M + bx * CELL, AXIS_M); ctx.lineTo(AXIS_M + bx * CELL, AXIS_M + H * CELL); ctx.stroke();
+    }
+    for (let by = 29; by < H; by += 29) {
+      ctx.beginPath(); ctx.moveTo(AXIS_M, AXIS_M + by * CELL); ctx.lineTo(AXIS_M + W * CELL, AXIS_M + by * CELL); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  }
+
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 1.5;
+  ctx.strokeRect(AXIS_M, AXIS_M, W * CELL, H * CELL);
+  ctx.restore();
+}
+
+/* ── Canvas zoom / pan ── */
+canvas.addEventListener('wheel', e => {
+  if (!pattern || e.target.closest('.detail-header')) return;
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+  const nz = Math.max(0.05, Math.min(15, zoom * factor));
+  panX = mx - (mx - panX) * (nz / zoom);
+  panY = my - (my - panY) * (nz / zoom);
+  zoom = nz;
+  hasAdjustedZoom = true;
+  drawPattern();
+  document.getElementById('resetZoomBtn').style.display = 'flex';
+}, { passive: false });
+
+let panning = false, lastX = 0, lastY = 0;
+canvas.addEventListener('mousedown', e => {
+  if (!pattern || e.target.closest('.detail-header')) return;
+  if (editMode) return;
+  panning = true; lastX = e.clientX; lastY = e.clientY;
+});
+window.addEventListener('mousemove', e => {
+  if (!panning) return;
+  panX += e.clientX - lastX; panY += e.clientY - lastY;
+  lastX = e.clientX; lastY = e.clientY;
+  drawPattern();
+});
+window.addEventListener('mouseup', () => { panning = false; });
+
+/* ── Touch events: pinch zoom, rotate, pan, tap ── */
+let touchStartDist = 0, touchStartZoom = 1, touchStartPanX = 0, touchStartPanY = 0;
+let touchStartAngle = 0, touchStartRotation = 0;
+let touchPanStartX = 0, touchPanStartY = 0;
+let isTouchPanning = false;
+let touchTapTimer = null;
+let isTouchDragging = false;
+let lastTapX = 0, lastTapY = 0;
+let touchMoved = false;
+
+canvas.addEventListener('touchstart', e => {
+  if (!pattern || e.target.closest('.detail-header')) return;
+
+  if (e.touches.length === 2) {
+    // Two-finger: pinch zoom + rotate + pan
+    clearTimeout(touchTapTimer);
+    isTouchPanning = true;
+    isTouchDragging = false;
+    touchMoved = false;
+    const t1 = e.touches[0], t2 = e.touches[1];
+    const dx = t2.clientX - t1.clientX;
+    const dy = t2.clientY - t1.clientY;
+    touchStartDist = Math.hypot(dx, dy);
+    touchStartZoom = zoom;
+    touchStartPanX = panX;
+    touchStartPanY = panY;
+    touchStartAngle = Math.atan2(dy, dx);
+    touchStartRotation = currentRotation;
+  } else if (e.touches.length === 1) {
+    // One-finger: pan or tap to edit
+    isTouchPanning = false;
+    isTouchDragging = false;
+    touchMoved = false;
+    const t = e.touches[0];
+    touchPanStartX = t.clientX;
+    touchPanStartY = t.clientY;
+    lastTapX = t.clientX;
+    lastTapY = t.clientY;
+    // In edit mode, use timer to detect tap vs drag
+    if (editMode) {
+      touchTapTimer = setTimeout(() => {
+        isTouchPanning = true;
+      }, 200);
+    } else {
+      // Not in edit mode: start panning immediately
+      isTouchPanning = true;
+    }
+  }
+}, { passive: true });
+
+canvas.addEventListener('touchmove', e => {
+  if (!pattern) return;
+  if (e.touches.length === 2) {
+    // Two-finger pinch zoom + rotate + pan
+    clearTimeout(touchTapTimer);
+    e.preventDefault();
+    const t1 = e.touches[0], t2 = e.touches[1];
+    const dx = t2.clientX - t1.clientX;
+    const dy = t2.clientY - t1.clientY;
+    const dist = Math.hypot(dx, dy);
+    const angle = Math.atan2(dy, dx);
+
+    // Zoom
+    const factor = dist / touchStartDist;
+    const nz = Math.max(0.05, Math.min(15, touchStartZoom * factor));
+
+    // Rotate
+    const angleDiff = angle - touchStartAngle;
+    currentRotation = touchStartRotation + angleDiff;
+
+    // Center point between two fingers
+    const rect = canvas.getBoundingClientRect();
+    const mx = (t1.clientX + t2.clientX) / 2 - rect.left;
+    const my = (t1.clientY + t2.clientY) / 2 - rect.top;
+
+    panX = mx - (mx - touchStartPanX) * (nz / touchStartZoom) - (mx - panX) * (nz / zoom - 1);
+    panY = my - (my - touchStartPanY) * (nz / touchStartZoom) - (my - panY) * (nz / zoom - 1);
+    zoom = nz;
+    hasAdjustedZoom = true;
+    touchMoved = true;
+    drawPattern();
+    document.getElementById('resetZoomBtn').style.display = 'flex';
+  } else if (e.touches.length === 1 && isTouchPanning) {
+    // One-finger pan
+    e.preventDefault();
+    const t = e.touches[0];
+    const moveX = t.clientX - touchPanStartX;
+    const moveY = t.clientY - touchPanStartY;
+
+    // If moved significantly, cancel tap
+    if (Math.abs(moveX) > 8 || Math.abs(moveY) > 8) {
+      clearTimeout(touchTapTimer);
+      isTouchPanning = true;
+      touchMoved = true;
+    }
+
+    panX += t.clientX - touchPanStartX;
+    panY += t.clientY - touchPanStartY;
+    touchPanStartX = t.clientX;
+    touchPanStartY = t.clientY;
+    isTouchDragging = true;
+    drawPattern();
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchend', e => {
+  if (!pattern) return;
+  clearTimeout(touchTapTimer);
+
+  if (e.touches.length === 0) {
+    // All fingers lifted
+    if (!touchMoved && e.changedTouches.length === 1) {
+      // Treat as tap - edit cell in edit mode
+      const t = e.changedTouches[0];
+      const rect = canvas.getBoundingClientRect();
+      const mx = t.clientX - rect.left;
+      const my = t.clientY - rect.top;
+
+      // Handle rotation when calculating grid coordinates
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const dx = mx - centerX;
+      const dy = my - centerY;
+      const cosR = Math.cos(-currentRotation);
+      const sinR = Math.sin(-currentRotation);
+      const rotatedMx = centerX + dx * cosR - dy * sinR;
+      const rotatedMy = centerY + dx * sinR + dy * cosR;
+
+      const gx = Math.floor(((rotatedMx - panX) / zoom - AXIS_M) / CELL);
+      const gy = Math.floor(((rotatedMy - panY) / zoom - AXIS_M) / CELL);
+      if (gx >= 0 && gx < pattern.width && gy >= 0 && gy < pattern.height && pattern.grid[gy] && pattern.grid[gy][gx]) {
+        if (editMode) {
+          openBeadPicker(gx, gy, t.clientX, t.clientY);
+        } else {
+          // Not in edit mode: switch to edit mode and open picker
+          document.getElementById('editMode').checked = true;
+          editMode = true;
+          canvas.style.cursor = 'crosshair';
+          updateCtrlBtnStates();
+          openBeadPicker(gx, gy, t.clientX, t.clientY);
+        }
+      }
+    }
+    isTouchPanning = false;
+    isTouchDragging = false;
+    touchMoved = false;
+  }
+}, { passive: true });
+
+/* ── Edit mode ── */
+document.getElementById('editMode').addEventListener('change', e => {
+  editMode = e.target.checked;
+  canvas.style.cursor = editMode ? 'crosshair' : 'grab';
+  hasEdited = true;
+  updateCtrlBtnStates();
+  if (!editMode) {
+    closeBeadPicker();
+  }
+});
+['showCodes', 'showGrid', 'showBoardLines', 'hideBg'].forEach(id => {
+  document.getElementById(id).addEventListener('change', () => {
+    if (pattern) fitAndDraw();
+  });
+});
+
+canvas.addEventListener('click', e => {
+  if (!pattern || !editMode) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const gx = Math.floor(((mx - panX) / zoom - AXIS_M) / CELL);
+  const gy = Math.floor(((my - panY) / zoom - AXIS_M) / CELL);
+  if (gx < 0 || gx >= pattern.width || gy < 0 || gy >= pattern.height) return;
+  openBeadPicker(gx, gy, e.clientX, e.clientY);
+});
+
+function openBeadPicker(gx, gy, px, py) {
+  const picker = document.getElementById('beadPicker');
+  const brand = document.getElementById('brandSelect').value;
+  const palette = BEAD_PALETTES[brand].colors;
+  const current = pattern.grid[gy] && pattern.grid[gy][gx];
+
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let left = px + 16, top = py - 40;
+  if (left + 270 > vw) left = px - 280;
+  if (top + 360 > vh) top = vh - 370;
+  if (top < 8) top = 8;
+  picker.style.left = left + 'px';
+  picker.style.top = top + 'px';
+
+  document.getElementById('bpTitle').textContent = `坐标 (${gx+1}, ${gy+1})` + (current ? ` · ${current.code}` : '');
+
+  editTarget = { gx, gy };
+
+  const container = document.getElementById('bpColors');
+  const searchInput = document.getElementById('bpSearch');
+  searchInput.value = '';
+
+  const renderSwatches = (filter = '') => {
+    const lower = filter.toLowerCase();
+    container.innerHTML = palette
+      .filter(c => !filter || c.code.toLowerCase().includes(lower) || c.name.toLowerCase().includes(lower))
+      .map(c => {
+        const active = current && c.code === current.code ? ' bp-active' : '';
+        const rgb = converter.hexToRgb(c.hex);
+        const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+        const lightClass = luminance > 0.6 ? ' bp-light' : '';
+        return `<div class="bp-swatch${active}${lightClass}" data-code="${c.code}" style="background:${c.hex}" title="${c.code} ${c.name}"><span class="bp-swatch-code">${c.code}</span></div>`;
+      }).join('');
+
+    container.querySelectorAll('.bp-swatch').forEach(el => {
+      el.addEventListener('click', () => applyBeadEdit(el.dataset.code));
+    });
+  };
+  renderSwatches();
+
+  searchInput.oninput = () => renderSwatches(searchInput.value);
+
+  picker.classList.remove('hidden');
+  searchInput.focus();
+
+  setTimeout(() => {
+    window._pickerOutsideHandler = e => {
+      if (!picker.contains(e.target)) closeBeadPicker();
+    };
+    window.addEventListener('mousedown', window._pickerOutsideHandler);
+  }, 100);
+}
+
+function closeBeadPicker() {
+  document.getElementById('beadPicker').classList.add('hidden');
+  if (window._pickerOutsideHandler) {
+    window.removeEventListener('mousedown', window._pickerOutsideHandler);
+    window._pickerOutsideHandler = null;
+  }
+}
+
+function applyBeadEdit(code) {
+  if (!editTarget || !pattern) return;
+  const { gx, gy } = editTarget;
+  const brand = document.getElementById('brandSelect').value;
+  const palette = BEAD_PALETTES[brand].colors;
+  const newColor = palette.find(c => c.code === code);
+  if (!newColor) return;
+
+  const rgb = converter.hexToRgb(newColor.hex);
+  const lab = converter.rgbToLab(rgb.r, rgb.g, rgb.b);
+  const colorObj = { ...newColor, rgb, lab };
+
+  const oldColor = pattern.grid[gy][gx];
+
+  pattern.grid[gy][gx] = colorObj;
+
+  if (oldColor) {
+    pattern.colorCounts[oldColor.code]--;
+    if (pattern.colorCounts[oldColor.code] <= 0) {
+      delete pattern.colorCounts[oldColor.code];
+    }
+  }
+  pattern.colorCounts[code] = (pattern.colorCounts[code] || 0) + 1;
+  pattern.uniqueColors = Object.keys(pattern.colorCounts).length;
+
+  hasEdited = true;
+  drawPattern();
+  updateMaterialList();
+  closeBeadPicker();
+}
+
+document.getElementById('bpClose').addEventListener('click', closeBeadPicker);
+
+/* ── Canvas hover tooltip ── */
+canvas.addEventListener('mousemove', e => {
+  if (!pattern) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const gx = Math.floor(((mx - panX) / zoom - AXIS_M) / CELL);
+  const gy = Math.floor(((my - panY) / zoom - AXIS_M) / CELL);
+  const tip = document.getElementById('beadTooltip');
+  if (gx < 0 || gx >= pattern.width || gy < 0 || gy >= pattern.height || !pattern.grid[gy][gx]) {
+    tip.classList.add('hidden'); return;
+  }
+  const c = pattern.grid[gy][gx];
+  tip.innerHTML = '<span class="tip-swatch" style="background:' + c.hex + '"></span><b>' + c.code + '</b> ' + c.name + '<br><small>坐标 (' + (gx+1) + ', ' + (gy+1) + ')</small>';
+  tip.style.left = (e.clientX + 14) + 'px';
+  tip.style.top = (e.clientY + 14) + 'px';
+  tip.classList.remove('hidden');
+});
+canvas.addEventListener('mouseleave', () => document.getElementById('beadTooltip').classList.add('hidden'));
+
+/* ── Image upload ── */
+const genDropZone = document.getElementById('genDropZone');
+const genFileInput = document.getElementById('genFileInput');
+
+genDropZone.addEventListener('click', () => genFileInput.click());
+genDropZone.addEventListener('dragover', e => { e.preventDefault(); genDropZone.classList.add('dragover'); });
+genDropZone.addEventListener('dragleave', () => genDropZone.classList.remove('dragover'));
+genDropZone.addEventListener('drop', e => {
+  e.preventDefault(); genDropZone.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) loadImage(f);
+});
+genFileInput.addEventListener('change', e => {
+  if (e.target.files[0]) loadImage(e.target.files[0]);
+});
+
+let autoGenerateFromFab = false;
+
+function loadImage(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    applyImage(e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function applyImage(dataUrl) {
+  const img = new Image();
+  img.onload = () => {
+    image = img; croppedImage = null;
+    currentDraftIdx = -1;
+    document.getElementById('genPreviewImg').src = dataUrl;
+    document.getElementById('genPreview').style.display = 'block';
+    document.getElementById('genDropZone').style.display = 'none';
+    refreshHeightLabel();
+    if (autoGenerateFromFab) {
+      autoGenerateFromFab = false;
+      doGenerate();
+    } else {
+      scheduleAutoGenerate();
+    }
+  };
+  img.src = dataUrl;
+}
+
+function refreshHeightLabel() {
+  const src = croppedImage || image;
+  if (!src) return;
+  const w = parseInt(document.getElementById('widthSlider').value);
+  document.getElementById('heightValue').textContent = Math.round(w * src.height / src.width);
+}
+
+/* ── Sliders ── */
+document.getElementById('widthSlider').addEventListener('input', e => {
+  document.getElementById('widthValue').textContent = e.target.value;
+  refreshHeightLabel();
+  if (!_restoringSettings) scheduleAutoGenerate(true);
+});
+document.getElementById('brandSelect').addEventListener('change', () => {
+  updateMaxColorsSlider();
+  if (!_restoringSettings) scheduleAutoGenerate(false);
+});
+
+function updateMaxColorsSlider() {
+  const brand = document.getElementById('brandSelect').value;
+  const palette = BEAD_PALETTES[brand].colors;
+  const total = palette.length;
+  const slider = document.getElementById('maxColorsSlider');
+  slider.max = total;
+  document.getElementById('paletteTotal').textContent = total;
+  if (parseInt(slider.value) > total) {
+    slider.value = 0;
+    document.getElementById('maxColorsValue').textContent = '不限';
+  }
+}
+document.getElementById('maxColorsSlider').addEventListener('input', e => {
+  const v = parseInt(e.target.value);
+  document.getElementById('maxColorsValue').textContent = v === 0 ? '不限' : v;
+  if (!_restoringSettings) scheduleAutoGenerate(false);
+});
+['brightness', 'contrast', 'saturation'].forEach(name => {
+  document.getElementById(name + 'Slider').addEventListener('input', e => {
+    window[name] = parseInt(e.target.value);
+    document.getElementById(name + 'Value').textContent = e.target.value;
+    if (!_restoringSettings) scheduleAutoGenerate(false);
+  });
+});
+
+updateMaxColorsSlider();
+
+/* ── Auto generate with debounce ── */
+let autoGenerateTimer = null;
+let autoGenerateNeedsSave = false;
+
+function scheduleAutoGenerate(needsSave = false) {
+  if (autoGenerateTimer) clearTimeout(autoGenerateTimer);
+  autoGenerateNeedsSave = needsSave;
+  autoGenerateTimer = setTimeout(() => {
+    if (hasEdited) return;
+    if (image || croppedImage || pattern) {
+      doGenerate(autoGenerateNeedsSave);
+    }
+  }, 600);
+}
+
+/* ── Generate pattern ── */
+function doGenerate(shouldSave = true) {
+  const srcImage = croppedImage || image;
+  if (pattern && !srcImage) {
+    showToast('空白画布已就绪，可直接编辑或导出');
+    document.getElementById('generatePage').classList.remove('active');
+    document.getElementById('settingsPage').classList.remove('active');
+    document.getElementById('homePage').classList.remove('active');
+    document.getElementById('detailPage').classList.add('active');
+    fitAndDraw();
+    updateMaterialList();
+    updateStats();
+    return;
+  }
+  if (!srcImage) { return; }
+
+  requestAnimationFrame(() => {
+    let width = parseInt(document.getElementById('widthSlider').value);
+    const brand = document.getElementById('brandSelect').value;
+    const maxColors = parseInt(document.getElementById('maxColorsSlider').value);
+    const palette = BEAD_PALETTES[brand].colors;
+
+    const adjustedImage = applyAdjustments(srcImage);
+    pattern = converter.convert(adjustedImage, width, palette, maxColors);
+    bgCode = detectBackgroundCode(pattern);
+    hasEdited = false;
+
+    if (currentDraftIdx === -1) {
+      document.getElementById('editMode').checked = true;
+      editMode = true;
+      canvas.style.cursor = 'crosshair';
+    }
+
+    document.getElementById('homePage').classList.add('exit-down');
+    setTimeout(() => {
+      document.getElementById('homePage').classList.remove('active', 'exit-down');
+      document.getElementById('detailPage').classList.add('active');
+      document.getElementById('detailPage').classList.add('enter-left');
+      setTimeout(() => document.getElementById('detailPage').classList.remove('enter-left'), 350);
+      fitAndDraw();
+      updateCtrlBtnStates();
+    }, 300);
+
+    showToast('生成成功！共 ' + pattern.totalBeads + ' 颗珠子，' + pattern.uniqueColors + ' 种颜色');
+
+    updateDraftEntry(width, brand);
+  });
+}
+
+function applyAdjustments(img) {
+  if (brightness === 0 && contrast === 0 && saturation === 0) return img;
+  const cvs = document.createElement('canvas');
+  cvs.width = img.naturalWidth || img.width;
+  cvs.height = img.naturalHeight || img.height;
+  const ctx2 = cvs.getContext('2d');
+  ctx2.filter = 'brightness(' + (100 + brightness) + '%) contrast(' + (100 + contrast) + '%) saturate(' + (100 + saturation) + '%)';
+  ctx2.drawImage(img, 0, 0);
+  return cvs;
+}
+
+function detectBackgroundCode(p) {
+  if (!p) return null;
+  const { grid, width: W, height: H } = p;
+  const edgeCounts = {};
+  let perimeter = 0;
+  const visit = (x, y) => {
+    perimeter++;
+    const c = grid[y] && grid[y][x];
+    if (!c) return;
+    edgeCounts[c.code] = (edgeCounts[c.code] || 0) + 1;
+  };
+  for (let x = 0; x < W; x++) { visit(x, 0); if (H > 1) visit(x, H - 1); }
+  for (let y = 1; y < H - 1; y++) { visit(0, y); if (W > 1) visit(W - 1, y); }
+  const best = Object.entries(edgeCounts).sort((a, b) => b[1] - a[1])[0];
+  if (!best || perimeter === 0) return null;
+  const [code, count] = best;
+  return count / perimeter >= 0.35 ? code : null;
+}
+
+function updateStats() {
+  if (!pattern) return;
+  const boards = Math.ceil(pattern.width / 29) * Math.ceil(pattern.height / 29);
+  showToast(pattern.width + '×' + pattern.height + ' · ' + pattern.totalBeads + '珠 · ' + pattern.uniqueColors + '色 · ' + boards + '板');
+}
+
+/* ── Save edited pattern ── */
+function saveEditedPattern() {
+  if (!pattern) return;
+  updateDraftEntry();
+}
+
+/* ── 草稿：更新当前草稿或新建 ── */
+function generateDraftThumb() {
+  if (!pattern) return '';
+  const thumbSize = 40;
+  const { grid, width: W, height: H } = pattern;
+  const thumbCvs = document.createElement('canvas');
+  const cellSize = Math.max(1, Math.floor(thumbSize / Math.max(W, H)));
+  thumbCvs.width = W * cellSize; thumbCvs.height = H * cellSize;
+  const tCtx = thumbCvs.getContext('2d');
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const c = grid[y][x];
+      if (!c) continue;
+      tCtx.fillStyle = c.hex;
+      tCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+    }
+  }
+  return thumbCvs.toDataURL('image/png', 0.6);
+}
+
+function captureSettings() {
+  return {
+    brand: document.getElementById('brandSelect').value,
+    width: parseInt(document.getElementById('widthSlider').value),
+    maxColors: parseInt(document.getElementById('maxColorsSlider').value),
+    brightness: parseInt(document.getElementById('brightnessSlider').value),
+    contrast: parseInt(document.getElementById('contrastSlider').value),
+    saturation: parseInt(document.getElementById('saturationSlider').value),
+    showCodes: document.getElementById('showCodes').checked,
+    showGrid: document.getElementById('showGrid').checked,
+    showBoardLines: document.getElementById('showBoardLines').checked,
+    hideBg: document.getElementById('hideBg').checked,
+    editMode: document.getElementById('editMode').checked,
+  };
+}
+
+let _restoringSettings = false;
+
+function restoreSettings(s, defaultEditMode) {
+  if (!s) return;
+  _restoringSettings = true;
+  const brandSel = document.getElementById('brandSelect');
+  if (s.brand) brandSel.value = s.brand;
+  updateMaxColorsSlider();
+  if (s.width) {
+    document.getElementById('widthSlider').value = s.width;
+    document.getElementById('widthValue').textContent = s.width;
+    refreshHeightLabel();
+  }
+  if (s.maxColors != null) {
+    document.getElementById('maxColorsSlider').value = s.maxColors;
+    document.getElementById('maxColorsValue').textContent = s.maxColors === 0 ? '不限' : s.maxColors;
+  }
+  ['brightness', 'contrast', 'saturation'].forEach(name => {
+    if (s[name] != null) {
+      window[name] = s[name];
+      document.getElementById(name + 'Slider').value = s[name];
+      document.getElementById(name + 'Value').textContent = s[name];
+    }
+  });
+  if (s.showCodes != null) document.getElementById('showCodes').checked = s.showCodes;
+  if (s.showGrid != null) document.getElementById('showGrid').checked = s.showGrid;
+  if (s.showBoardLines != null) document.getElementById('showBoardLines').checked = s.showBoardLines;
+  if (s.hideBg != null) document.getElementById('hideBg').checked = s.hideBg;
+  const em = s.editMode != null ? s.editMode : defaultEditMode;
+  document.getElementById('editMode').checked = em;
+  editMode = em;
+  canvas.style.cursor = em ? 'crosshair' : 'grab';
+  updateCtrlBtnStates();
+  _restoringSettings = false;
+}
+
+function updateDraftEntry(width, brand) {
+  if (!pattern) return;
+  if (!brand) brand = document.getElementById('brandSelect').value;
+  if (!width) width = pattern.width;
+
+  const serializedGrid = pattern.grid.map(row => row.map(c => c ? c.code : '.'));
+  const thumb = generateDraftThumb();
+  const settings = captureSettings();
+
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem('bead_drafts') || '[]'); } catch {}
+
+  if (currentDraftIdx >= 0 && list[currentDraftIdx]) {
+    const entry = list[currentDraftIdx];
+    entry.thumb = thumb;
+    entry.width = pattern.width;
+    entry.height = pattern.height;
+    entry.brand = brand;
+    entry.colors = pattern.uniqueColors;
+    entry.beads = pattern.totalBeads;
+    entry.grid = serializedGrid;
+    entry.date = new Date().toLocaleString('zh-CN');
+    entry.settings = settings;
+  } else {
+    const entry = {
+      thumb,
+      width: pattern.width, height: pattern.height, brand,
+      colors: pattern.uniqueColors, beads: pattern.totalBeads,
+      date: new Date().toLocaleString('zh-CN'),
+      grid: serializedGrid,
+      settings,
+    };
+    list.unshift(entry);
+    if (list.length > 10) list.length = 10;
+    currentDraftIdx = 0;
+  }
+
+  localStorage.setItem('bead_drafts', JSON.stringify(list));
+  renderHistoryCards();
+}
+
+/* ── 兼容旧 localStorage key ── */
+function migrateOldHistoryKey() {
+  const oldKey = 'bead_history';
+  const newKey = 'bead_drafts';
+  if (!localStorage.getItem(newKey)) {
+    const oldData = localStorage.getItem(oldKey);
+    if (oldData) {
+      localStorage.setItem(newKey, oldData);
+      localStorage.removeItem(oldKey);
+    }
+  }
+}
+migrateOldHistoryKey();
+
+function renderHistoryCards() {
+  const container = document.getElementById('historyCards');
+  const empty = document.getElementById('emptyState');
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem('bead_drafts') || '[]'); } catch {}
+  if (list.length === 0) {
+    container.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+
+  empty.classList.add('hidden');
+  container.classList.remove('slide-up');
+
+  let html = '';
+  list.forEach((h, idx) => {
+    html += '<div class="work-card" data-idx="' + idx + '" onclick="loadFromHistory(this)">';
+    html += '<button class="card-delete-btn" data-idx="' + idx + '" onclick="event.stopPropagation(); showDeleteConfirm(' + idx + ')">×</button>';
+    html += '<div class="card-avatar"><img src="' + h.thumb + '" alt="缩略图"></div>';
+    html += '<div class="card-info"><div class="card-name">' + h.width + '×' + h.height + ' · ' + h.colors + '色</div>';
+    html += '<div class="card-time">' + h.beads + '珠 · ' + h.date + '</div></div></div>';
+  });
+  container.innerHTML = html;
+
+  void container.offsetWidth;
+  container.classList.add('slide-up');
+}
+
+function loadFromHistory(el) {
+  const idx = el.dataset.idx;
+  currentDraftIdx = parseInt(idx);
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem('bead_drafts') || '[]'); } catch {}
+  const entry = list[parseInt(idx)];
+  if (!entry) { showToast('草稿不存在'); return; }
+
+  if (entry.settings) {
+    restoreSettings(entry.settings, false);
+  } else {
+    restoreSettings({ width: entry.width, brand: entry.brand }, false);
+  }
+
+  if (entry.grid) {
+    const brand = entry.brand || 'mard';
+    const W = entry.width;
+    const palette = BEAD_PALETTES[brand].colors;
+
+    const img = new Image();
+    img.onload = () => {
+      image = img;
+      croppedImage = null;
+      const adjustedImage = applyAdjustments(img);
+      pattern = converter.convert(adjustedImage, W, palette, 0);
+      bgCode = detectBackgroundCode(pattern);
+      hasEdited = false;
+
+      document.getElementById('homePage').classList.add('exit-down');
+      setTimeout(() => {
+        document.getElementById('homePage').classList.remove('active', 'exit-down');
+        document.getElementById('detailPage').classList.add('active');
+        document.getElementById('detailPage').classList.add('enter-left');
+        setTimeout(() => document.getElementById('detailPage').classList.remove('enter-left'), 350);
+        fitAndDraw();
+        updateMaterialList();
+        updateStats();
+        updateCtrlBtnStates();
+      }, 300);
+    };
+    img.src = entry.thumb;
+  } else {
+    const img = el.querySelector('img');
+    loadImageFromHistory(img.src, el);
+    return;
+  }
+
+  hasEdited = false;
+  document.getElementById('homePage').classList.add('exit-down');
+  setTimeout(() => {
+    document.getElementById('homePage').classList.remove('active', 'exit-down');
+    document.getElementById('detailPage').classList.add('active');
+    document.getElementById('detailPage').classList.add('enter-left');
+    setTimeout(() => document.getElementById('detailPage').classList.remove('enter-left'), 350);
+    fitAndDraw();
+    updateMaterialList();
+    updateStats();
+    updateCtrlBtnStates();
+  }, 300);
+}
+
+function loadImageFromHistory(dataUrl, cardEl) {
+  const idx = cardEl.dataset.idx;
+  currentDraftIdx = parseInt(idx);
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem('bead_drafts') || '[]'); } catch {}
+  const entry = list[parseInt(idx)];
+  if (entry && entry.settings) {
+    restoreSettings(entry.settings, false);
+  } else {
+    restoreSettings({ width: entry.width, brand: entry.brand }, false);
+  }
+  const img = new Image();
+  img.onload = () => {
+    image = img; croppedImage = null;
+    const nameEl = cardEl.querySelector('.card-name');
+    const parts = nameEl.textContent.split('×');
+    const w = parseInt(parts[0]);
+    const brand = 'mard';
+    const palette = BEAD_PALETTES[brand].colors;
+    const adjustedImage = applyAdjustments(img);
+    pattern = converter.convert(adjustedImage, w, palette, 0);
+    bgCode = detectBackgroundCode(pattern);
+    hasEdited = false;
+    document.getElementById('homePage').classList.add('exit-down');
+    setTimeout(() => {
+      document.getElementById('homePage').classList.remove('active', 'exit-down');
+      document.getElementById('detailPage').classList.add('active');
+      document.getElementById('detailPage').classList.add('enter-left');
+      setTimeout(() => document.getElementById('detailPage').classList.remove('enter-left'), 350);
+      fitAndDraw();
+      updateMaterialList();
+      updateStats();
+      updateCtrlBtnStates();
+    }, 300);
+  };
+  img.src = dataUrl;
+}
+
+/* ── Export PNG ── */
+document.getElementById('exportPngBtn').addEventListener('click', () => {
+  if (!pattern) { showToast('请先生成图案'); return; }
+  const { grid, width: W, height: H, colorCounts } = pattern;
+  const CELL = 20, AXIS = 24;
+  const brand = document.getElementById('brandSelect').value;
+  const palette = BEAD_PALETTES[brand].colors;
+  const sorted = Object.entries(colorCounts).sort((a, b) => b[1] - a[1]);
+
+  const legendItemW = 120;
+  const legendCols = Math.max(1, Math.floor((W * CELL) / legendItemW));
+  const legendRows = Math.ceil(sorted.length / legendCols);
+  const legendH = 16 + legendRows * 22 + 8;
+  const totalW = AXIS * 2 + W * CELL;
+  const totalH = AXIS * 2 + H * CELL + legendH;
+
+  const cvs = document.createElement('canvas');
+  cvs.width = totalW; cvs.height = totalH;
+  const ctx2 = cvs.getContext('2d');
+  ctx2.fillStyle = '#FFF';
+  ctx2.fillRect(0, 0, totalW, totalH);
+
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const c = grid[y][x]; if (!c) continue;
+      ctx2.fillStyle = c.hex;
+      ctx2.fillRect(AXIS + x * CELL, AXIS + y * CELL, CELL, CELL);
+      ctx2.strokeStyle = 'rgba(0,0,0,0.2)'; ctx2.lineWidth = 0.5;
+      ctx2.strokeRect(AXIS + x * CELL, AXIS + y * CELL, CELL, CELL);
+      ctx2.fillStyle = '#111'; ctx2.font = 'bold 7px Arial';
+      ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+      ctx2.fillText(c.code, AXIS + x * CELL + CELL / 2, AXIS + y * CELL + CELL / 2);
+    }
+  }
+
+  ctx2.strokeStyle = 'rgba(0,0,0,0.1)'; ctx2.lineWidth = 0.5;
+  for (let x = 0; x <= W; x++) { ctx2.beginPath(); ctx2.moveTo(AXIS+x*CELL, AXIS); ctx2.lineTo(AXIS+x*CELL, AXIS+H*CELL); ctx2.stroke(); }
+  for (let y = 0; y <= H; y++) { ctx2.beginPath(); ctx2.moveTo(AXIS, AXIS+y*CELL); ctx2.lineTo(AXIS+W*CELL, AXIS+y*CELL); ctx2.stroke(); }
+
+  ctx2.strokeStyle = '#333'; ctx2.lineWidth = 1.5;
+  ctx2.strokeRect(AXIS, AXIS, W * CELL, H * CELL);
+
+  ctx2.fillStyle = '#444'; ctx2.font = 'bold 10px Arial';
+  ctx2.textAlign = 'center'; ctx2.textBaseline = 'bottom';
+  for (let x = 0; x < W; x++) ctx2.fillText(x + 1, AXIS + x * CELL + CELL / 2, AXIS - 3);
+  ctx2.textAlign = 'right'; ctx2.textBaseline = 'middle';
+  for (let y = 0; y < H; y++) ctx2.fillText(y + 1, AXIS - 4, AXIS + y * CELL + CELL / 2);
+
+  const legTop = AXIS + H * CELL + AXIS + 4;
+  ctx2.font = '10px sans-serif'; ctx2.textBaseline = 'middle';
+  sorted.forEach(([code, count], i) => {
+    const c = palette.find(p => p.code === code); if (!c) return;
+    const col = i % legendCols, row = Math.floor(i / legendCols);
+    const lx = AXIS + col * legendItemW, ly = legTop + row * 22;
+    ctx2.fillStyle = c.hex; ctx2.fillRect(lx, ly, 18, 18);
+    ctx2.strokeStyle = '#ccc'; ctx2.lineWidth = 0.5; ctx2.strokeRect(lx, ly, 18, 18);
+    ctx2.fillStyle = '#333'; ctx2.textAlign = 'left';
+    ctx2.font = 'bold 10px sans-serif';
+    ctx2.fillText(code + ' (' + count + ')', lx + 22, ly + 10);
+  });
+
+  const a = document.createElement('a');
+  a.download = 'bead-pattern-' + W + 'x' + H + '.png';
+  a.href = cvs.toDataURL('image/png');
+  a.click();
+  showToast('PNG 已导出');
+});
+
+/* ── Export PDF (A4, pattern grid top, color list bottom) ── */
+document.getElementById('exportPdfBtn').addEventListener('click', () => {
+  if (!pattern) { showToast('请先生成图案'); return; }
+  if (typeof window.jspdf === 'undefined') { showToast('PDF 库未加载，请稍后再试'); return; }
+
+  const { jsPDF } = window.jspdf;
+  const { grid, width: W, height: H, colorCounts, totalBeads } = pattern;
+  const brand = document.getElementById('brandSelect').value;
+  const palette = BEAD_PALETTES[brand].colors;
+  const sorted = Object.entries(colorCounts).sort((a, b) => b[1] - a[1]);
+  const numColors = sorted.length;
+
+  const numPages = Math.ceil(numColors / 50);
+
+  for (let page = 0; page < numPages; page++) {
+    const startIdx = page * 50;
+    const endIdx = Math.min(startIdx + 50, numColors);
+    const pageColors = sorted.slice(startIdx, endIdx);
+
+    if (page > 0 && pageColors.length === 0) break;
+
+    const legendRowCount = Math.ceil(pageColors.length / 10);
+    const legendAreaHeight = Math.max(25, legendRowCount * 16 + 10);
+    const headerH = 14;
+    const gridAreaH = 277 - legendAreaHeight - headerH;
+    const cellSize = Math.min(gridAreaH / H, (196) / W);
+    const gridW = cellSize * W;
+    const gridH = cellSize * H;
+    const numLabelH = Math.max(5, cellSize * 0.6 + 1);
+
+    const canvasCell = Math.max(cellSize * 4, 16);
+    const labelCanvasH = Math.max(canvasCell * 0.6, 14);
+    const gridCanvasW = Math.ceil(W * canvasCell);
+    const gridCanvasH = Math.ceil(H * canvasCell);
+
+    const cvs = document.createElement('canvas');
+    cvs.width = gridCanvasW; cvs.height = gridCanvasH;
+    const ctx = cvs.getContext('2d');
+
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const c = grid[y] && grid[y][x];
+        ctx.fillStyle = c ? c.hex : '#f5f5f5';
+        ctx.fillRect(x * canvasCell, y * canvasCell, canvasCell, canvasCell);
+
+        if (c) {
+          ctx.strokeStyle = '#b0b0b0';
+          ctx.lineWidth = 0.5;
+          ctx.strokeRect(x * canvasCell, y * canvasCell, canvasCell, canvasCell);
+
+          const fSize = Math.max(canvasCell * 0.45, 9);
+          ctx.font = 'bold ' + fSize + 'px Arial, sans-serif';
+          ctx.fillStyle = '#111';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(c.code, x * canvasCell + canvasCell / 2, y * canvasCell + canvasCell / 2);
+        } else {
+          ctx.strokeStyle = '#e5e5e5';
+          ctx.lineWidth = 0.3;
+          ctx.strokeRect(x * canvasCell, y * canvasCell, canvasCell, canvasCell);
+        }
+      }
+    }
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const margin = 8;
+
+    doc.setFontSize(12);
+    doc.setTextColor(51, 51, 51);
+    doc.setFont(undefined, 'bold');
+    doc.text('Bead Pattern ' + W + 'x' + H, margin, margin + 5);
+    doc.setFontSize(7);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(150, 150, 150);
+    var brandName = BEAD_PALETTES[brand].name.replace(/[^A-Za-z0-9\s\-&]/g, '').trim();
+    doc.text(brandName + ' | ' + numColors + ' colors | ' + totalBeads + ' beads', margin, margin + 9);
+
+    const imgData = cvs.toDataURL('image/png');
+    const gridImgW = gridW;
+    const gridImgH = gridH;
+    const gridImgX = margin + numLabelH;
+    const gridImgY = margin + headerH;
+    doc.addImage(imgData, 'PNG', gridImgX, gridImgY, gridImgW, gridImgH);
+
+    doc.setFontSize(Math.max(numLabelH * 0.6, 2.5));
+    doc.setTextColor(140, 140, 140);
+    doc.setFont(undefined, 'normal');
+    for (let x = 0; x < W; x++) {
+      const label = String(x + 1);
+      const tw = doc.getTextWidth(label);
+      doc.text(label, gridImgX + (x + 0.5) * canvasCell * (gridW / gridCanvasW) - tw / 2, gridImgY - 1);
+    }
+    for (let y = 0; y < H; y++) {
+      const label = String(y + 1);
+      const tw = doc.getTextWidth(label);
+      doc.text(label, gridImgX - tw - 1, gridImgY + (y + 0.5) * canvasCell * (gridH / gridCanvasH) + 1);
+    }
+
+    const legendY = gridImgY + gridImgH + 5;
+    doc.setFontSize(8);
+    doc.setTextColor(60, 60, 60);
+    doc.setFont(undefined, 'bold');
+    doc.text('Color Legend / Material List', margin, legendY);
+    doc.setFont(undefined, 'normal');
+
+    let lX = margin;
+    let lY = legendY + 4;
+    const swatchR = 2.5;
+    const swatchGap = 1.5;
+    const swatchW = swatchR * 2;
+    const swatchRowH = swatchW + swatchGap;
+
+    pageColors.forEach(([code, count]) => {
+      const c = palette.find(p => p.code === code);
+      if (!c) return;
+      const rgb = converter.hexToRgb(c.hex);
+
+      const label = c.code + ' x' + count;
+      const tw = doc.getTextWidth(label);
+      const itemW = swatchW + swatchGap + tw;
+
+      if (lX + itemW > pageW - margin && lX > margin) {
+        lX = margin;
+        lY += swatchRowH;
+      }
+      if (lY + swatchW > 285) {
+        doc.addPage();
+        lY = margin + 3;
+        lX = margin;
+      }
+
+      doc.setFillColor(rgb.r, rgb.g, rgb.b);
+      doc.circle(lX + swatchR, lY + swatchR, swatchR, 'F');
+
+      doc.setFontSize(8);
+      doc.setTextColor(60, 60, 60);
+      doc.text(label, lX + swatchW + swatchGap, lY + swatchR + 1);
+
+      lX += itemW + 3;
+    });
+
+    if (page < numPages - 1) {
+      doc.save('bead-pattern-part-' + (page + 1) + '-' + W + 'x' + H + '.pdf');
+    } else {
+      doc.save('bead-pattern-' + W + 'x' + H + '.pdf');
+    }
+  }
+
+  showToast('PDF 已导出');
+});
+
+/* ── Gallery ── */
+function openGallery() {
+  const modal = document.getElementById('galleryModal');
+  if (!window._galleryMode) window._galleryMode = 'sbti';
+  modal.querySelectorAll('.gallery-mode-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === window._galleryMode);
+    btn.onclick = () => {
+      window._galleryMode = btn.dataset.mode;
+      modal.querySelectorAll('.gallery-mode-btn').forEach(b => b.classList.toggle('active', b === btn));
+      window._galleryTabsBuilt = false;
+      document.getElementById('galleryTabs').innerHTML = '';
+      buildGalleryTabs();
+      renderGalleryGrid(0);
+      toggleTextPanel();
+    };
+  });
+  buildGalleryTabs();
+  renderGalleryGrid(0);
+  toggleTextPanel();
+  initPixelTextOnce();
+  modal.classList.remove('hidden');
+}
+
+
+function openPixelTextFromGenerate() {
+  openGallery();
+  setTimeout(() => {
+    const textBtn = document.querySelector('[data-mode="text"]');
+    if (textBtn) textBtn.click();
+  }, 100);
+}
+
+function openPixelRestore() {
+  document.getElementById('pixelRestoreModal').classList.remove('hidden');
+}
+
+document.getElementById('galleryClose').addEventListener('click', () => {
+  document.getElementById('galleryModal').classList.add('hidden');
+});
+
+document.getElementById('galleryModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('galleryModal')) {
+    document.getElementById('galleryModal').classList.add('hidden');
+  }
+});
+
+function toggleTextPanel() {
+  const tp = document.getElementById('pixelTextPanel');
+  const tabs = document.getElementById('galleryTabs');
+  const grid = document.getElementById('galleryGrid');
+  if (window._galleryMode === 'text') {
+    tp.classList.remove('hidden'); tabs.classList.add('hidden'); grid.classList.add('hidden');
+  } else {
+    tp.classList.add('hidden'); tabs.classList.remove('hidden'); grid.classList.remove('hidden');
+  }
+}
+
+function buildGalleryTabs() {
+  const tabs = document.getElementById('galleryTabs');
+  if (tabs.children.length) return;
+  const source = getGallerySource();
+  if (source.length <= 1) { tabs.classList.add('hidden'); } else { tabs.classList.remove('hidden'); }
+  source.forEach((cat, i) => {
+    const tab = document.createElement('div');
+    tab.className = 'gallery-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = cat.name;
+    tab.dataset.idx = i;
+    tab.addEventListener('click', () => {
+      tabs.querySelectorAll('.gallery-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderGalleryGrid(parseInt(tab.dataset.idx));
+    });
+    tabs.appendChild(tab);
+  });
+}
+
+function getGallerySource() {
+  if (typeof PATTERN_GALLERY !== 'undefined') {
+    if (window._galleryMode === 'pattern') return PATTERN_GALLERY.filter(c => c.id !== 'famous-ip' && c.id !== 'sbti-pixel');
+    if (window._galleryMode === 'famous-ip') return PATTERN_GALLERY.filter(c => c.id === 'famous-ip');
+    if (window._galleryMode === 'sbti') return PATTERN_GALLERY.filter(c => c.id === 'sbti-pixel');
+  }
+  return [];
+}
+
+function isPatternMode() {
+  return window._galleryMode === 'pattern' || window._galleryMode === 'famous-ip' || window._galleryMode === 'sbti';
+}
+
+function renderGalleryGrid(catIdx) {
+  const grid = document.getElementById('galleryGrid');
+  const source = getGallerySource();
+  const cat = source[catIdx];
+  if (!cat) return;
+  if (isPatternMode()) {
+    grid.innerHTML = cat.items.map((item, i) => {
+      const thumb = item.image || renderPatternThumb(item, 80);
+      const cls = item.image ? 'gallery-item gallery-pattern-item gallery-illust-item' : 'gallery-item gallery-pattern-item';
+      return '<div class="' + cls + '" data-cat="' + catIdx + '" data-idx="' + i + '"><img src="' + thumb + '" alt="' + item.name + '"><span>' + item.name + '</span><small>' + item.width + 'x' + item.rows.length + '</small></div>';
+    }).join('');
+    grid.querySelectorAll('.gallery-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const ci = parseInt(el.dataset.cat), ii = parseInt(el.dataset.idx);
+        const item = source[ci].items[ii];
+        if (item.image) {
+          loadImageFromUrl(item.image, item.name, item);
+        } else {
+          loadPattern(item);
+        }
+        document.getElementById('galleryModal').classList.add('hidden');
+      });
+    });
+  } else {
+    grid.innerHTML = cat.items.map((item, i) => {
+      return '<div class="gallery-item" data-cat="' + catIdx + '" data-idx="' + i + '"><img src="' + item.url + '" alt="' + item.name + '" loading="lazy"><span>' + item.name + '</span></div>';
+    }).join('');
+    grid.querySelectorAll('.gallery-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const ci = parseInt(el.dataset.cat), ii = parseInt(el.dataset.idx);
+        const item = source[ci].items[ii];
+        loadImageFromUrl(item.url, item.name);
+        document.getElementById('galleryModal').classList.add('hidden');
+      });
+    });
+  }
+}
+
+function loadImageFromUrl(url, name, galleryTemplate) {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    const cvs = document.createElement('canvas');
+    cvs.width = img.naturalWidth; cvs.height = img.naturalHeight;
+    cvs.getContext('2d').drawImage(img, 0, 0);
+    const dataUrl = cvs.toDataURL('image/png');
+    applyImage(dataUrl);
+  };
+  img.onerror = () => showToast('图片加载失败');
+  img.src = url;
+}
+
+function loadPattern(patternData) {
+  const brand = document.getElementById('brandSelect').value;
+  const palette = BEAD_PALETTES[brand].colors;
+  pattern = decodePattern(patternData, palette);
+  bgCode = detectBackgroundCode(pattern);
+  image = null; croppedImage = null;
+  currentDraftIdx = -1;
+  hasEdited = false;
+  document.getElementById('homePage').classList.add('exit-down');
+  setTimeout(() => {
+    document.getElementById('homePage').classList.remove('active', 'exit-down');
+    document.getElementById('detailPage').classList.add('active');
+    document.getElementById('detailPage').classList.add('enter-left');
+    setTimeout(() => document.getElementById('detailPage').classList.remove('enter-left'), 350);
+    fitAndDraw();
+    updateMaterialList();
+    showToast('已加载图案 ' + patternData.name);
+  }, 300);
+}
+
+/* ── Pixel text ── */
+let _ptInited = false;
+function initPixelTextOnce() {
+  if (_ptInited) return;
+  _ptInited = true;
+  document.getElementById('ptGenBtn').addEventListener('click', generatePixelText);
+  document.getElementById('ptInput').addEventListener('keydown', e => { if (e.key === 'Enter') generatePixelText(); });
+  document.querySelectorAll('.pt-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('ptInput').value = btn.dataset.text;
+      generatePixelText();
+    });
+  });
+}
+
+function generatePixelText() {
+  const text = document.getElementById('ptInput').value.trim();
+  if (!text) return;
+  const fontSize = parseInt(document.getElementById('ptSize').value);
+  const fgColor = document.getElementById('ptFg').value;
+  const bgColor = document.getElementById('ptBg').value;
+  const patternData = PixelTextGenerator.generate(text, fontSize, fgColor, bgColor);
+  if (!patternData) return;
+
+  const preview = document.getElementById('ptPreview');
+  const thumb = PixelTextGenerator.renderPreview(patternData, 160);
+  preview.innerHTML = '<img src="' + thumb + '" alt="' + text + '" style="image-rendering:pixelated;max-width:100%;max-height:160px;cursor:pointer;" title="点击使用此图案">';
+  preview.querySelector('img').addEventListener('click', () => {
+    loadPattern(patternData);
+    document.getElementById('galleryModal').classList.add('hidden');
+  });
+  document.getElementById('ptInfo').innerHTML = '<b>' + patternData.width + ' × ' + patternData.rows.length + '</b> 珠';
+}
+
+/* ── FAB upload ── */
+document.getElementById('fabUpload').addEventListener('click', () => {
+  autoGenerateFromFab = true;
+  genFileInput.click();
+});
+
+/* ── Pattern Controls ── */
+
+function updateCtrlBtnStates() {
+  document.getElementById('toggleGridBtn').classList.toggle('active', document.getElementById('showGrid').checked);
+  document.getElementById('toggleCodeBtn').classList.toggle('active', document.getElementById('showCodes').checked);
+  document.getElementById('editToggleBtn').classList.toggle('active', document.getElementById('editMode').checked);
+  document.getElementById('resetZoomBtn').style.display = hasAdjustedZoom ? 'flex' : 'none';
+}
+
+/* ── Init ── */
+generateStaticPattern();
+renderHistoryCards();
+updateCtrlBtnStates();
+
+document.getElementById('resetZoomBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  if (!pattern) {
+    showToast('请先加载图案');
+    return;
+  }
+
+  const btn = document.getElementById('resetZoomBtn');
+  btn.classList.add('rotating');
+  setTimeout(() => btn.classList.remove('rotating'), 500);
+
+  const wrapper = document.querySelector('.pattern-wrapper');
+  const pw = pattern.width * CELL + AXIS_M * 2;
+  const ph = pattern.height * CELL + AXIS_M * 2;
+  const targetZoom = Math.min(wrapper.clientWidth / pw, wrapper.clientHeight / ph, 1);
+  const targetPanX = (wrapper.clientWidth - pw * targetZoom) / 2;
+  const targetPanY = (wrapper.clientHeight - ph * targetZoom) / 2;
+
+  const startZoom = zoom, startPanX = panX, startPanY = panY;
+  const startRotation = currentRotation;
+  const duration = 350;
+  const startTime = performance.now();
+
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function animate(now) {
+    let t = Math.min((now - startTime) / duration, 1);
+    const et = easeOutCubic(t);
+
+    zoom = startZoom + (targetZoom - startZoom) * et;
+    panX = startPanX + (targetPanX - startPanX) * et;
+    panY = startPanY + (targetPanY - startPanY) * et;
+    currentRotation = startRotation + (0 - startRotation) * et;
+
+    drawPattern();
+
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      hasAdjustedZoom = false;
+      document.getElementById('resetZoomBtn').style.display = 'none';
+      showToast('缩放已重置');
+    }
+  }
+  requestAnimationFrame(animate);
+});
+
+document.getElementById('editToggleBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  if (!pattern) {
+    showToast('请先加载图案');
+    return;
+  }
+  const cb = document.getElementById('editMode');
+  cb.checked = !cb.checked;
+  cb.dispatchEvent(new Event('change'));
+});
+
+document.getElementById('toggleGridBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const cb = document.getElementById('showGrid');
+  cb.checked = !cb.checked;
+  updateCtrlBtnStates();
+  if (pattern) drawPattern();
+});
+
+document.getElementById('toggleCodeBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const cb = document.getElementById('showCodes');
+  cb.checked = !cb.checked;
+  updateCtrlBtnStates();
+  if (pattern) drawPattern();
+});
+
+// Restore panel
+if (document.getElementById('pixelRestoreClose')) {
+  document.getElementById('pixelRestoreClose').addEventListener('click', () => {
+    document.getElementById('pixelRestoreModal').classList.add('hidden');
+  });
+}
+document.getElementById('pixelRestoreModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('pixelRestoreModal')) {
+    document.getElementById('pixelRestoreModal').classList.add('hidden');
+  }
+});
+document.querySelectorAll('[data-restore-mode]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-restore-mode]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+document.getElementById('restoreApplyBtn').addEventListener('click', () => {
+  const restoreCanvas = document.getElementById('restoreResultCanvas');
+  if (restoreCanvas.width > 0) {
+    const dataUrl = restoreCanvas.toDataURL('image/png');
+    applyImage(dataUrl);
+    document.getElementById('pixelRestoreModal').classList.add('hidden');
+    showToast('已应用还原结果');
+  }
+});
+
+/* ── Layout toggle ── */
+let isDualColumn = localStorage.getItem('dual_column') === 'true';
+if (isDualColumn) {
+  document.getElementById('historyCards').classList.add('dual-column');
+  const icon = document.getElementById('headerLayoutIcon');
+  if (icon) {
+    icon.innerHTML = '<rect x="3" y="3" width="7" height="18" rx="1" ry="1"></rect><rect x="14" y="3" width="7" height="18" rx="1" ry="1"></rect>';
+  }
+}
+/* ── Header actions ── */
+function newCanvasAction() {
+  openNewCanvasModal();
+}
+
+function toggleLayoutAction() {
+  isDualColumn = !isDualColumn;
+  const container = document.getElementById('historyCards');
+  const icon = document.getElementById('headerLayoutIcon');
+
+  container.classList.add('layout-transitioning');
+
+  if (isDualColumn) {
+    container.classList.add('dual-column');
+    icon.innerHTML = '<rect x="3" y="3" width="7" height="18" rx="1" ry="1"></rect><rect x="14" y="3" width="7" height="18" rx="1" ry="1"></rect>';
+  } else {
+    container.classList.remove('dual-column');
+    icon.innerHTML = '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="3" x2="12" y2="21"></line>';
+  }
+
+  setTimeout(() => {
+    container.classList.remove('layout-transitioning');
+  }, 400);
+
+  localStorage.setItem('dual_column', isDualColumn);
+}
+
+/* ── New Canvas Modal ── */
+function openNewCanvasModal() {
+  document.getElementById('newCanvasModal').classList.remove('hidden');
+  document.getElementById('canvasWidth').value = 50;
+  document.getElementById('canvasHeight').value = 50;
+  document.getElementById('canvasWidth').focus();
+}
+
+function closeNewCanvasModal() {
+  document.getElementById('newCanvasModal').classList.add('hidden');
+}
+
+document.getElementById('newCanvasClose').addEventListener('click', closeNewCanvasModal);
+document.getElementById('newCanvasCancel').addEventListener('click', closeNewCanvasModal);
+document.getElementById('newCanvasModal').addEventListener('click', e => {
+  if (e.target.id === 'newCanvasModal') closeNewCanvasModal();
+});
+
+document.getElementById('newCanvasConfirm').addEventListener('click', () => {
+  const w = parseInt(document.getElementById('canvasWidth').value) || 50;
+  const h = parseInt(document.getElementById('canvasHeight').value) || 50;
+  if (w < 10 || h < 10) {
+    showToast('尺寸必须大于等于 10');
+    return;
+  }
+  if (w > 1000 || h > 1000) {
+    showToast('最大尺寸为 1000×1000');
+    return;
+  }
+
+  const brand = document.getElementById('brandSelect').value;
+  const palette = BEAD_PALETTES[brand].colors;
+
+  pattern = {
+    width: w,
+    height: h,
+    grid: Array.from({ length: h }, () => Array(w).fill(null)),
+    colorCounts: {},
+    totalBeads: 0,
+    uniqueColors: 0
+  };
+  bgCode = detectBackgroundCode(pattern);
+  image = null; croppedImage = null;
+  currentDraftIdx = -1;
+
+  closeNewCanvasModal();
+
+  document.getElementById('homePage').classList.add('exit-down');
+  setTimeout(() => {
+    document.getElementById('homePage').classList.remove('active', 'exit-down');
+    document.getElementById('detailPage').classList.add('active');
+    document.getElementById('detailPage').classList.add('enter-left');
+    setTimeout(() => document.getElementById('detailPage').classList.remove('enter-left'), 350);
+    fitAndDraw();
+    updateMaterialList();
+
+    // Auto-enable edit mode for blank canvas
+    document.getElementById('editMode').checked = true;
+    editMode = true;
+    canvas.style.cursor = 'crosshair';
+    updateCtrlBtnStates();
+    updateStats();
+  }, 300);
+
+  showToast('已创建 ' + w + '×' + h + ' 空白画布');
+});
+
+/* ── Delete Confirm Modal ── */
+let deleteTargetIdx = -1;
+
+function showDeleteConfirm(idx) {
+  deleteTargetIdx = idx;
+  document.getElementById('confirmModal').classList.remove('hidden');
+}
+
+function closeDeleteConfirm() {
+  document.getElementById('confirmModal').classList.add('hidden');
+  deleteTargetIdx = -1;
+}
+
+document.getElementById('confirmCancelBtn').addEventListener('click', closeDeleteConfirm);
+document.getElementById('confirmModal').addEventListener('click', e => {
+  if (e.target.id === 'confirmModal') closeDeleteConfirm();
+});
+
+document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+  if (deleteTargetIdx < 0) return;
+
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem('bead_drafts') || '[]'); } catch {}
+  if (deleteTargetIdx >= list.length) {
+    closeDeleteConfirm();
+    return;
+  }
+
+  list.splice(deleteTargetIdx, 1);
+  localStorage.setItem('bead_drafts', JSON.stringify(list));
+
+  closeDeleteConfirm();
+  renderHistoryCards();
+  showToast('已删除草稿');
+});
+</script>
+</body>
+</html>
