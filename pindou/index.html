@@ -1961,19 +1961,45 @@ function generateStaticPattern() {
 }
 
 /* ── Canvas rendering ── */
+let dpr = window.devicePixelRatio || 1;
+
+// Re-render on DPR change (e.g., moving window between monitors with different densities)
+window.addEventListener('resize', () => {
+  const newDpr = window.devicePixelRatio || 1;
+  if (newDpr !== dpr && pattern) {
+    dpr = newDpr;
+    const wrapper = document.querySelector('.pattern-wrapper');
+    canvas.width = wrapper.clientWidth * dpr;
+    canvas.height = wrapper.clientHeight * dpr;
+    canvas.style.width = wrapper.clientWidth + 'px';
+    canvas.style.height = wrapper.clientHeight + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    drawPattern();
+  }
+});
+
 function fitAndDraw() {
   if (!pattern) return;
   const wrapper = document.querySelector('.pattern-wrapper');
-  canvas.width = wrapper.clientWidth;
-  canvas.height = wrapper.clientHeight;
+  const cssWidth = wrapper.clientWidth;
+  const cssHeight = wrapper.clientHeight;
+
+  // Apply DPR for sharp rendering on high-density displays
+  dpr = window.devicePixelRatio || 1;
+  canvas.width = cssWidth * dpr;
+  canvas.height = cssHeight * dpr;
+  canvas.style.width = cssWidth + 'px';
+  canvas.style.height = cssHeight + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
   canvas.style.display = 'block';
   document.getElementById('patternInner').style.display = 'none';
 
   const pw = pattern.width * CELL + AXIS_M * 2;
   const ph = pattern.height * CELL + AXIS_M * 2;
-  zoom = Math.min(canvas.width / pw, canvas.height / ph, 1);
-  panX = (canvas.width - pw * zoom) / 2;
-  panY = (canvas.height - ph * zoom) / 2;
+  zoom = Math.min(cssWidth / pw, cssHeight / ph, 1);
+  panX = (cssWidth - pw * zoom) / 2;
+  panY = (cssHeight - ph * zoom) / 2;
   drawPattern();
   updateMaterialList();
   showToast('图案已生成！');
@@ -1982,7 +2008,12 @@ function fitAndDraw() {
 function drawPattern() {
   if (!pattern) return;
   const { grid, width: W, height: H } = pattern;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Use CSS dimensions (not internal canvas size) for drawing
+  const cssWidth = canvas.width / dpr;
+  const cssHeight = canvas.height / dpr;
+
+  ctx.clearRect(0, 0, cssWidth, cssHeight);
   ctx.save();
   ctx.translate(panX, panY);
   ctx.scale(zoom, zoom);
@@ -1991,6 +2022,9 @@ function drawPattern() {
     ctx.rotate(currentRotation);
     ctx.translate(-(W * CELL / 2 + AXIS_M), -(H * CELL / 2 + AXIS_M));
   }
+
+  // Disable image smoothing for pixel-perfect rendering
+  ctx.imageSmoothingEnabled = false;
 
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(AXIS_M, AXIS_M, W * CELL, H * CELL);
@@ -2106,6 +2140,8 @@ let touchTapTimer = null;
 let isTouchDragging = false;
 let lastTapX = 0, lastTapY = 0;
 let touchMoved = false;
+let rafId = null; // For requestAnimationFrame optimization
+let needsRedraw = false;
 
 canvas.addEventListener('touchstart', e => {
   if (!pattern || e.target.closest('.detail-header')) return;
@@ -2177,7 +2213,14 @@ canvas.addEventListener('touchmove', e => {
     zoom = nz;
     hasAdjustedZoom = true;
     touchMoved = true;
-    drawPattern();
+
+    // Use requestAnimationFrame for smoother rendering
+    if (!rafId) {
+      rafId = requestAnimationFrame(() => {
+        drawPattern();
+        rafId = null;
+      });
+    }
     document.getElementById('resetZoomBtn').style.display = 'flex';
   } else if (e.touches.length === 1 && isTouchPanning) {
     // One-finger pan
@@ -2198,7 +2241,14 @@ canvas.addEventListener('touchmove', e => {
     touchPanStartX = t.clientX;
     touchPanStartY = t.clientY;
     isTouchDragging = true;
-    drawPattern();
+
+    // Use requestAnimationFrame for smoother rendering
+    if (!rafId) {
+      rafId = requestAnimationFrame(() => {
+        drawPattern();
+        rafId = null;
+      });
+    }
   }
 }, { passive: false });
 
@@ -2216,8 +2266,8 @@ canvas.addEventListener('touchend', e => {
       const my = t.clientY - rect.top;
 
       // Handle rotation when calculating grid coordinates
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
+      const centerX = canvas.width / dpr / 2;
+      const centerY = canvas.height / dpr / 2;
       const dx = mx - centerX;
       const dy = my - centerY;
       const cosR = Math.cos(-currentRotation);
