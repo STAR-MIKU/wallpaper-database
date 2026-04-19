@@ -1019,18 +1019,41 @@
     }
 
     /* ===== Bead picker ===== */
-    .bead-picker { position: fixed; z-index: 400; background: #fff; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); width: 260px; padding: 12px; }
+    .bead-picker { 
+      position: fixed; 
+      z-index: 400; 
+      background: #fff; 
+      border-radius: 14px; 
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2); 
+      width: 296px; 
+      max-height: 80vh;
+      padding: 12px; 
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    .bead-picker::-webkit-scrollbar { display: none; }
+    .bead-picker { -ms-overflow-style: none; scrollbar-width: none; }
     .bead-picker.hidden { display: none; }
+    .bead-picker-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 399;
+    }
+    .bead-picker-overlay.hidden { display: none; }
     .bp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
     .bp-close { border: none; background: none; font-size: 20px; cursor: pointer; color: #999; }
     .bp-search { width: 100%; padding: 6px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; margin-bottom: 8px; }
-    .bp-colors { display: flex; flex-wrap: wrap; gap: 4px; max-height: 200px; overflow-y: auto; scrollbar-width: none; }
+    .bp-colors { display: grid; grid-template-columns: repeat(8, 30px); gap: 4px; max-height: 200px; overflow-y: auto; scrollbar-width: none; justify-content: center; }
     .bp-colors::-webkit-scrollbar { display: none; }
-    .bp-swatch { width: 30px; height: 34px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 2px; position: relative; overflow: hidden; }
+    .bp-swatch { width: 30px; height: 30px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
     .bp-swatch:hover { transform: scale(1.15); }
     .bp-swatch.bp-active { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.3); }
-    .bp-swatch-code { font-size: 8px; font-weight: 700; color: #fff; text-shadow: 0 0 3px rgba(0,0,0,0.8), 0 0 1px rgba(0,0,0,0.9); line-height: 1; letter-spacing: 0.5px; }
-    .bp-swatch.bp-light .bp-swatch-code { color: #333; text-shadow: 0 0 3px rgba(255,255,255,0.8), 0 0 1px rgba(255,255,255,0.9); }
+    .bp-swatch-code { font-size: 8px; font-weight: 700; color: #fff; text-shadow: none; line-height: 1; letter-spacing: 0.5px; }
+    .bp-swatch.bp-light .bp-swatch-code { color: #333; text-shadow: none; }
 
     /* ===== Bead tooltip ===== */
     .bead-tooltip { position: fixed; z-index: 350; background: rgba(0,0,0,0.85); color: #fff; padding: 6px 10px; border-radius: 8px; font-size: 12px; pointer-events: none; }
@@ -1094,6 +1117,124 @@
     /* ===== Edit mode hint ===== */
     .edit-mode-hint { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 12px; z-index: 20; pointer-events: none; }
     .canvas-edit-mode { cursor: crosshair !important; }
+
+    /* ===== Inline edit toolbar ===== */
+    .inline-toolbar {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 60;
+      background: rgb(255 255 255 / 80%);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 20px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: max-content;
+      max-width: calc(100vw - 16px);
+      min-width: 120px;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .inline-toolbar.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(-50%) translateY(-10px);
+    }
+    .inline-toolbar-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding: 2px 0;
+    }
+    .inline-toolbar-row::-webkit-scrollbar { display: none; }
+    .inline-colors-container {
+      display: grid;
+      grid-template-columns: repeat(10, 28px);
+      gap: 6px;
+      justify-content: center;
+    }
+    .inline-swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.15s;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .inline-swatch:hover { transform: scale(1.15); }
+    .inline-swatch.active {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.3);
+    }
+    .inline-swatch-code {
+      font-size: 8px;
+      font-weight: 700;
+      text-shadow: none;
+      color: #fff;
+      pointer-events: none;
+    }
+    .inline-swatch.light .inline-swatch-code {
+      color: #333;
+      text-shadow: none;
+    }
+    .inline-tool-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 2px solid #e5e7eb;
+      background: #f9fafb;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .inline-tool-btn:hover { border-color: #3b82f6; background: #eff6ff; }
+    .inline-tool-btn.active {
+      border-color: #3b82f6;
+      background: #dbeafe;
+    }
+    .inline-separator {
+      width: 1px;
+      height: 20px;
+      background: #e5e7eb;
+      flex-shrink: 0;
+      margin: 0 2px;
+    }
+    .inline-toolbar-label {
+      font-size: 10px;
+      color: #6b7280;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .inline-more-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 2px solid #e5e7eb;
+      background: #f9fafb;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      color: #9ca3af;
+    }
+    .inline-more-btn:hover { border-color: #3b82f6; color: #3b82f6; }
 
     /* ===== Fullscreen ===== */
     .fake-fullscreen { position: fixed !important; inset: 0 !important; z-index: 500 !important; background: #fff !important; border-radius: 0 !important; }
@@ -1305,6 +1446,30 @@
                 </svg>
               </button>
             </div>
+          </div>
+          <!-- Inline edit toolbar -->
+          <div class="inline-toolbar hidden" id="inlineToolbar">
+            <div class="inline-colors-container" id="inlineColorsRow">
+              <button class="inline-tool-btn" id="inlineEraserBtn" title="橡皮擦">
+                <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+                  <path d="M16 32H36" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <path d="M28.6 10L38 19.4L22.4 35L13 25.6L28.6 10Z" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="inline-tool-btn" id="inlineClearBtn" title="清空当前格子">
+                <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+                  <path d="M16 16L32 32M32 16L16 32" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <button class="inline-more-btn" id="inlineMoreBtn" title="更多颜色">
+                <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+                  <circle cx="24" cy="14" r="4" fill="currentColor"/>
+                  <circle cx="24" cy="24" r="4" fill="currentColor"/>
+                  <circle cx="24" cy="34" r="4" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
+            <div class="inline-toolbar-label" id="inlineToolbarLabel">点击格子编辑颜色</div>
           </div>
         </div>
       </div>
@@ -1630,6 +1795,9 @@
 <!-- Bead tooltip -->
 <div id="beadTooltip" class="bead-tooltip hidden"></div>
 
+<!-- Bead color picker overlay -->
+<div id="beadPickerOverlay" class="bead-picker-overlay hidden"></div>
+
 <!-- Bead color picker -->
 <div id="beadPicker" class="bead-picker hidden">
   <div class="bp-header">
@@ -1669,8 +1837,14 @@ let editTarget = null;
 let hasEdited = false;
 let hasAdjustedZoom = false;
 let currentDraftIdx = -1;
+let selectedColor = null;
+let isEraserMode = false;
+let toolbarColors = [];
 
 const CELL = 18, AXIS_M = 22;
+const MAX_TOOLBAR_COLORS = 24;
+const TOOLBAR_COLORS_PER_ROW = 8;
+const TOOLBAR_MAX_ROWS = 3;
 
 /* ── Toast ── */
 function showToast(msg) {
@@ -2113,6 +2287,21 @@ function drawPattern() {
 
   ctx.strokeStyle = '#333'; ctx.lineWidth = 1.5;
   ctx.strokeRect(AXIS_M, AXIS_M, W * CELL, H * CELL);
+
+  // Draw selection anchor indicator
+  if (editTarget && editMode) {
+    const { gx, gy } = editTarget;
+    if (gx >= 0 && gx < W && gy >= 0 && gy < H) {
+      const sx = AXIS_M + gx * CELL;
+      const sy = AXIS_M + gy * CELL;
+      const inset = 1;
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 2.5 / zoom;
+      ctx.setLineDash([]);
+      ctx.strokeRect(sx + inset, sy + inset, CELL - inset * 2, CELL - inset * 2);
+    }
+  }
+
   ctx.restore();
 }
 
@@ -2329,28 +2518,30 @@ canvas.addEventListener('touchend', e => {
   clearTimeout(touchTapTimer);
 
   if (e.touches.length === 0) {
-    // All fingers lifted
     if (!touchMoved && e.changedTouches.length === 1) {
-      // Treat as tap - edit cell in edit mode
       const t = e.changedTouches[0];
       const rect = canvas.getBoundingClientRect();
       const mx = t.clientX - rect.left;
       const my = t.clientY - rect.top;
 
-      // Handle rotation when calculating grid coordinates
       const pt = screenToPattern(mx, my);
       const gx = Math.floor((pt.x - AXIS_M) / CELL);
       const gy = Math.floor((pt.y - AXIS_M) / CELL);
-      if (gx >= 0 && gx < pattern.width && gy >= 0 && gy < pattern.height && pattern.grid[gy] && pattern.grid[gy][gx]) {
+      if (gx >= 0 && gx < pattern.width && gy >= 0 && gy < pattern.height) {
+        editTarget = { gx, gy };
         if (editMode) {
-          openBeadPicker(gx, gy, t.clientX, t.clientY);
+          if (isEraserMode) {
+            applyEraserToCell();
+          }
+          showInlineToolbar(gx, gy);
+          drawPattern();
         } else {
-          // Not in edit mode: switch to edit mode and open picker
           document.getElementById('editMode').checked = true;
           editMode = true;
           canvas.style.cursor = 'crosshair';
           updateCtrlBtnStates();
-          openBeadPicker(gx, gy, t.clientX, t.clientY);
+          showInlineToolbar(gx, gy);
+          drawPattern();
         }
       }
     }
@@ -2368,6 +2559,7 @@ document.getElementById('editMode').addEventListener('change', e => {
   updateCtrlBtnStates();
   if (!editMode) {
     closeBeadPicker();
+    hideInlineToolbar();
   }
 });
 ['showCodes', 'showGrid', 'showBoardLines', 'hideBg'].forEach(id => {
@@ -2383,22 +2575,22 @@ canvas.addEventListener('click', e => {
   const gx = Math.floor(((mx - panX) / zoom - AXIS_M) / CELL);
   const gy = Math.floor(((my - panY) / zoom - AXIS_M) / CELL);
   if (gx < 0 || gx >= pattern.width || gy < 0 || gy >= pattern.height) return;
-  openBeadPicker(gx, gy, e.clientX, e.clientY);
+  editTarget = { gx, gy };
+  showInlineToolbar(gx, gy);
+  if (isEraserMode) {
+    applyEraserToCell();
+  } else if (!pattern.grid[gy][gx] && selectedColor) {
+    applyColorToCell(selectedColor.code);
+  }
+  drawPattern();
 });
 
 function openBeadPicker(gx, gy, px, py) {
   const picker = document.getElementById('beadPicker');
+  const overlay = document.getElementById('beadPickerOverlay');
   const brand = document.getElementById('brandSelect').value;
   const palette = BEAD_PALETTES[brand].colors;
   const current = pattern.grid[gy] && pattern.grid[gy][gx];
-
-  const vw = window.innerWidth, vh = window.innerHeight;
-  let left = px + 16, top = py - 40;
-  if (left + 270 > vw) left = px - 280;
-  if (top + 360 > vh) top = vh - 370;
-  if (top < 8) top = 8;
-  picker.style.left = left + 'px';
-  picker.style.top = top + 'px';
 
   document.getElementById('bpTitle').textContent = `坐标 (${gx+1}, ${gy+1})` + (current ? ` · ${current.code}` : '');
 
@@ -2421,20 +2613,19 @@ function openBeadPicker(gx, gy, px, py) {
       }).join('');
 
     container.querySelectorAll('.bp-swatch').forEach(el => {
-      el.addEventListener('click', () => applyBeadEdit(el.dataset.code));
+      el.addEventListener('click', () => addColorToToolbar(el.dataset.code));
     });
   };
   renderSwatches();
 
   searchInput.oninput = () => renderSwatches(searchInput.value);
 
-  // Prevent auto-focus to avoid triggering mobile keyboard
   searchInput.setAttribute('readonly', 'readonly');
   searchInput.value = '';
 
   picker.classList.remove('hidden');
+  overlay.classList.remove('hidden');
 
-  // Allow keyboard only when user explicitly taps the search input
   searchInput.onclick = function(e) {
     e.stopPropagation();
     if (this.hasAttribute('readonly')) {
@@ -2442,22 +2633,47 @@ function openBeadPicker(gx, gy, px, py) {
       this.focus();
     }
   };
-
-  setTimeout(() => {
-    window._pickerOutsideHandler = e => {
-      if (!picker.contains(e.target)) closeBeadPicker();
-    };
-    window.addEventListener('mousedown', window._pickerOutsideHandler);
-  }, 100);
 }
 
 function closeBeadPicker() {
   document.getElementById('beadPicker').classList.add('hidden');
+  document.getElementById('beadPickerOverlay').classList.add('hidden');
   if (window._pickerOutsideHandler) {
     window.removeEventListener('mousedown', window._pickerOutsideHandler);
     window._pickerOutsideHandler = null;
   }
 }
+
+function addColorToToolbar(code) {
+  const brand = document.getElementById('brandSelect').value;
+  const palette = BEAD_PALETTES[brand].colors;
+  const color = palette.find(c => c.code === code);
+  if (!color) return;
+  
+  const idx = toolbarColors.findIndex(c => c.code === code);
+  if (idx !== -1) {
+    toolbarColors.splice(idx, 1);
+  }
+  toolbarColors.unshift(color);
+  if (toolbarColors.length > MAX_TOOLBAR_COLORS) {
+    toolbarColors.pop();
+  }
+  
+  selectedColor = color;
+  isEraserMode = false;
+  document.getElementById('inlineEraserBtn').classList.remove('active');
+  updateInlineToolbarColors();
+  
+  // 立即保存到草稿
+  if (currentDraftIdx >= 0) {
+    saveEditedPattern();
+  }
+}
+
+document.getElementById('bpClose').addEventListener('click', closeBeadPicker);
+
+// 点击遮罩层关闭弹窗
+document.getElementById('beadPickerOverlay').addEventListener('click', closeBeadPicker);
 
 function applyBeadEdit(code) {
   if (!editTarget || !pattern) return;
@@ -2491,6 +2707,195 @@ function applyBeadEdit(code) {
 }
 
 document.getElementById('bpClose').addEventListener('click', closeBeadPicker);
+
+/* ── Inline toolbar logic ── */
+function showInlineToolbar(gx, gy) {
+  const toolbar = document.getElementById('inlineToolbar');
+  const current = pattern.grid[gy] && pattern.grid[gy][gx];
+  
+  editTarget = { gx, gy };
+  
+  updateInlineToolbarColors();
+  
+  document.getElementById('inlineToolbarLabel').textContent = 
+    `坐标 (${gx+1}, ${gy+1})` + (current ? ` · ${current.code}` : '');
+  
+  toolbar.classList.remove('hidden');
+}
+
+function hideInlineToolbar() {
+  document.getElementById('inlineToolbar').classList.add('hidden');
+}
+
+function updateInlineToolbarColors() {
+  const container = document.getElementById('inlineColorsRow');
+  const brand = document.getElementById('brandSelect').value;
+  const palette = BEAD_PALETTES[brand].colors;
+  
+  let colors = toolbarColors.length > 0 ? toolbarColors : getTopPatternColors(12);
+  
+  if (colors.length === 0) {
+    colors = palette.slice(0, 8);
+  }
+  
+  // Preserve tool buttons, remove only color swatches
+  container.querySelectorAll('.inline-swatch').forEach(el => el.remove());
+  
+  // Build swatches HTML and insert before the first tool button
+  const swatchesHTML = colors.map((c, i) => {
+    const rgb = converter.hexToRgb(c.hex);
+    const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+    const lightClass = luminance > 0.6 ? ' light' : '';
+    const activeClass = selectedColor && selectedColor.code === c.code ? ' active' : '';
+    return `<div class="inline-swatch${lightClass}${activeClass}" data-code="${c.code}" data-index="${i}" style="background:${c.hex}" title="${c.code} ${c.name}"><span class="inline-swatch-code">${c.code}</span></div>`;
+  }).join('');
+  
+  const toolsContainer = container.querySelector('.inline-tools-group') || container;
+  toolsContainer.insertAdjacentHTML('afterbegin', swatchesHTML);
+  
+  container.querySelectorAll('.inline-swatch').forEach(el => {
+    el.addEventListener('click', () => {
+      const code = el.dataset.code;
+      selectColor(code);
+      applyColorToCell(code);
+    });
+  });
+  
+  // Update label to show color count
+  const label = document.getElementById('inlineToolbarLabel');
+  if (toolbarColors.length > 0) {
+    label.textContent = `已添加 ${toolbarColors.length}/${MAX_TOOLBAR_COLORS} 色 · 点击格子涂色`;
+  } else {
+    label.textContent = '点击"更多颜色"添加到工具栏';
+  }
+}
+
+function getTopPatternColors(count) {
+  if (!pattern) return [];
+  const colorCounts = pattern.colorCounts || {};
+  const sorted = Object.entries(colorCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, count)
+    .map(([code]) => {
+      const brand = document.getElementById('brandSelect').value;
+      const palette = BEAD_PALETTES[brand].colors;
+      return palette.find(c => c.code === code);
+    })
+    .filter(Boolean);
+  return sorted;
+}
+
+function selectColor(code) {
+  const brand = document.getElementById('brandSelect').value;
+  const palette = BEAD_PALETTES[brand].colors;
+  const color = palette.find(c => c.code === code);
+  if (!color) return;
+  
+  selectedColor = color;
+  isEraserMode = false;
+  document.getElementById('inlineEraserBtn').classList.remove('active');
+  updateInlineToolbarColors();
+}
+
+function applyColorToCell(code) {
+  if (!editTarget || !pattern) return;
+  const { gx, gy } = editTarget;
+  const brand = document.getElementById('brandSelect').value;
+  const palette = BEAD_PALETTES[brand].colors;
+  const newColor = palette.find(c => c.code === code);
+  if (!newColor) return;
+  
+  const rgb = converter.hexToRgb(newColor.hex);
+  const lab = converter.rgbToLab(rgb.r, rgb.g, rgb.b);
+  const colorObj = { ...newColor, rgb, lab };
+  
+  const oldColor = pattern.grid[gy][gx];
+  
+  pattern.grid[gy][gx] = colorObj;
+  
+  if (oldColor) {
+    pattern.colorCounts[oldColor.code]--;
+    if (pattern.colorCounts[oldColor.code] <= 0) {
+      delete pattern.colorCounts[oldColor.code];
+    }
+  }
+  pattern.colorCounts[code] = (pattern.colorCounts[code] || 0) + 1;
+  pattern.uniqueColors = Object.keys(pattern.colorCounts).length;
+  
+  hasEdited = true;
+  drawPattern();
+  updateMaterialList();
+  updateInlineToolbarColors();
+}
+
+function applyEraserToCell() {
+  if (!editTarget || !pattern) return;
+  const { gx, gy } = editTarget;
+  const oldColor = pattern.grid[gy][gx];
+  
+  if (oldColor) {
+    pattern.colorCounts[oldColor.code]--;
+    if (pattern.colorCounts[oldColor.code] <= 0) {
+      delete pattern.colorCounts[oldColor.code];
+    }
+    pattern.grid[gy][gx] = null;
+    pattern.uniqueColors = Object.keys(pattern.colorCounts).length;
+    
+    hasEdited = true;
+    drawPattern();
+    updateMaterialList();
+    updateInlineToolbarColors();
+  }
+}
+
+function addToToolbarColors(color) {
+  const idx = toolbarColors.findIndex(c => c.code === color.code);
+  if (idx !== -1) {
+    toolbarColors.splice(idx, 1);
+  }
+  toolbarColors.unshift(color);
+  if (toolbarColors.length > MAX_TOOLBAR_COLORS) {
+    toolbarColors.pop();
+  }
+}
+
+/* Inline toolbar event handlers */
+document.getElementById('inlineEraserBtn').addEventListener('click', () => {
+  isEraserMode = !isEraserMode;
+  document.getElementById('inlineEraserBtn').classList.toggle('active', isEraserMode);
+  if (isEraserMode) {
+    selectedColor = null;
+    updateInlineToolbarColors();
+    if (editTarget) applyEraserToCell();
+  }
+});
+
+document.getElementById('inlineClearBtn').addEventListener('click', () => {
+  if (editTarget) applyEraserToCell();
+});
+
+document.getElementById('inlineMoreBtn').addEventListener('click', () => {
+  if (editTarget && pattern) {
+    const rect = document.getElementById('patternCanvas').getBoundingClientRect();
+    openBeadPicker(editTarget.gx, editTarget.gy, rect.width / 2, rect.height / 2);
+  }
+});
+
+// Click outside to close inline toolbar
+document.addEventListener('mousedown', e => {
+  const toolbar = document.getElementById('inlineToolbar');
+  const cvs = document.getElementById('patternCanvas');
+  const picker = document.getElementById('beadPicker');
+  const overlay = document.getElementById('beadPickerOverlay');
+  if (!toolbar.classList.contains('hidden') && 
+      !toolbar.contains(e.target) && 
+      e.target !== cvs && 
+      !cvs.contains(e.target) &&
+      !picker.contains(e.target) &&
+      !overlay.contains(e.target)) {
+    hideInlineToolbar();
+  }
+});
 
 /* ── Canvas hover tooltip ── */
 canvas.addEventListener('mousemove', e => {
@@ -2776,6 +3181,17 @@ function restoreSettings(s, defaultEditMode) {
   editMode = em;
   canvas.style.cursor = em ? 'crosshair' : 'grab';
   updateCtrlBtnStates();
+  
+  // 恢复工具栏颜色
+  if (s.toolbarColors && Array.isArray(s.toolbarColors)) {
+    const brand = s.brand || brandSel.value;
+    const palette = BEAD_PALETTES[brand].colors;
+    toolbarColors = s.toolbarColors
+      .map(code => palette.find(c => c.code === code))
+      .filter(Boolean);
+    updateInlineToolbarColors();
+  }
+  
   _restoringSettings = false;
 }
 
@@ -2802,6 +3218,7 @@ function updateDraftEntry(width, brand) {
     entry.grid = serializedGrid;
     entry.date = new Date().toLocaleString('zh-CN');
     entry.settings = settings;
+    entry.toolbarColors = toolbarColors.map(c => c.code);
   } else {
     const entry = {
       thumb,
@@ -2810,6 +3227,7 @@ function updateDraftEntry(width, brand) {
       date: new Date().toLocaleString('zh-CN'),
       grid: serializedGrid,
       settings,
+      toolbarColors: toolbarColors.map(c => c.code),
     };
     list.unshift(entry);
     if (list.length > 10) list.length = 10;
@@ -2871,38 +3289,64 @@ function loadFromHistory(el) {
   if (!entry) { showToast('草稿不存在'); return; }
 
   if (entry.settings) {
-    restoreSettings(entry.settings, false);
+    const settings = { ...entry.settings };
+    if (entry.toolbarColors) {
+      settings.toolbarColors = entry.toolbarColors;
+    }
+    restoreSettings(settings, false);
   } else {
-    restoreSettings({ width: entry.width, brand: entry.brand }, false);
+    const settings = { width: entry.width, brand: entry.brand };
+    if (entry.toolbarColors) {
+      settings.toolbarColors = entry.toolbarColors;
+    }
+    restoreSettings(settings, false);
   }
 
   if (entry.grid) {
     const brand = entry.brand || 'mard';
     const W = entry.width;
+    const H = entry.height;
     const palette = BEAD_PALETTES[brand].colors;
 
-    const img = new Image();
-    img.onload = () => {
-      image = img;
-      croppedImage = null;
-      const adjustedImage = applyAdjustments(img);
-      pattern = converter.convert(adjustedImage, W, palette, 0);
-      bgCode = detectBackgroundCode(pattern);
-      hasEdited = false;
+    // 从保存的网格数据恢复图案
+    const colorCounts = {};
+    const grid = entry.grid.map((row, y) => 
+      row.map((code, x) => {
+        if (code === '.') return null;
+        const c = palette.find(p => p.code === code);
+        if (c) {
+          colorCounts[code] = (colorCounts[code] || 0) + 1;
+          const rgb = converter.hexToRgb(c.hex);
+          const lab = converter.rgbToLab(rgb.r, rgb.g, rgb.b);
+          return { ...c, rgb, lab };
+        }
+        return null;
+      })
+    );
 
-      document.getElementById('homePage').classList.add('exit-down');
-      setTimeout(() => {
-        document.getElementById('homePage').classList.remove('active', 'exit-down');
-        document.getElementById('detailPage').classList.add('active');
-        document.getElementById('detailPage').classList.add('enter-left');
-        setTimeout(() => document.getElementById('detailPage').classList.remove('enter-left'), 350);
-        fitAndDraw();
-        updateMaterialList();
-        updateStats();
-        updateCtrlBtnStates();
-      }, 300);
+    pattern = {
+      grid,
+      width: W,
+      height: H,
+      uniqueColors: Object.keys(colorCounts).length,
+      totalBeads: Object.values(colorCounts).reduce((a, b) => a + b, 0),
+      colorCounts,
     };
-    img.src = entry.thumb;
+    bgCode = detectBackgroundCode(pattern);
+    hasEdited = false;
+
+    document.getElementById('homePage').classList.add('exit-down');
+    setTimeout(() => {
+      document.getElementById('homePage').classList.remove('active', 'exit-down');
+      document.getElementById('detailPage').classList.add('active');
+      document.getElementById('detailPage').classList.add('enter-left');
+      setTimeout(() => document.getElementById('detailPage').classList.remove('enter-left'), 350);
+      fitAndDraw();
+      updateMaterialList();
+      updateStats();
+      updateCtrlBtnStates();
+      updateInlineToolbarColors();
+    }, 300);
   } else {
     const img = el.querySelector('img');
     loadImageFromHistory(img.src, el);
